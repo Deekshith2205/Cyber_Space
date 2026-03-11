@@ -12,7 +12,7 @@ export default function DashboardLayout({
     children: React.ReactNode;
 }) {
     return (
-        <div className="relative z-10 min-h-screen bg-[#0B0F14]">
+        <div className="relative z-10 min-h-screen bg-background text-foreground transition-colors duration-300">
             <TopNavbar />
             <Sidebar />
             <main className="pl-64 pr-80 pt-16 min-h-screen transition-all duration-300 grid-background">

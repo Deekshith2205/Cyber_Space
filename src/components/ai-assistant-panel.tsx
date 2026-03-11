@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { cn } from "@/lib/utils";
 import { Send, User, Bot, Mic, Sparkles, MessageSquare, ShieldCheck, Info } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -39,13 +40,13 @@ export default function AIAssistant() {
     };
 
     return (
-        <div className="fixed top-16 right-0 bottom-0 w-80 glass border-l border-white/10 flex flex-col z-30">
-            <div className="p-4 border-b border-white/10 flex items-center justify-between">
+        <div className="fixed top-16 right-0 bottom-0 w-80 bg-panel border-l border-border flex flex-col z-30 shadow-sm transition-colors duration-300">
+            <div className="p-4 border-b border-border flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-neon-purple/20 flex items-center justify-center text-neon-purple shadow-[0_0_10px_rgba(122,92,255,0.3)]">
+                    <div className="w-8 h-8 rounded-full bg-[#E0F2FE] flex items-center justify-center text-cyber-blue shadow-sm">
                         <Bot size={18} />
                     </div>
-                    <span className="font-bold text-sm">AI Cyber Assistant</span>
+                    <span className="font-bold text-sm text-foreground">AI Cyber Assistant</span>
                 </div>
                 <div className="flex gap-1">
                     <div className="w-2 h-2 rounded-full bg-success-green animate-pulse" />
@@ -61,10 +62,12 @@ export default function AIAssistant() {
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                         >
-                            <div className={`max-w-[85%] p-3 rounded-2xl text-xs leading-relaxed ${msg.role === "user"
-                                ? "bg-cyber-blue/20 text-white border border-cyber-blue/30"
-                                : "bg-white/5 text-zinc-300 border border-white/10"
-                                }`}>
+                            <div className={cn(
+                                "max-w-[85%] p-3 rounded-2xl text-xs leading-relaxed shadow-sm border",
+                                msg.role === "user"
+                                    ? "bg-[#E0F2FE] dark:bg-cyber-blue/20 text-[#0F172A] dark:text-white border-cyber-blue/20"
+                                    : "bg-[#F1F5F9] dark:bg-white/5 text-[#0F172A] dark:text-zinc-300 border-border dark:border-white/10"
+                            )}>
                                 {msg.text}
                             </div>
                         </motion.div>
@@ -73,24 +76,24 @@ export default function AIAssistant() {
 
                 {isTyping && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
-                        <div className="bg-white/5 p-3 rounded-2xl border border-white/10 flex gap-1">
-                            <span className="w-1.5 h-1.5 bg-zinc-500 rounded-full animate-bounce" />
-                            <span className="w-1.5 h-1.5 bg-zinc-500 rounded-full animate-bounce [animation-delay:0.2s]" />
-                            <span className="w-1.5 h-1.5 bg-zinc-500 rounded-full animate-bounce [animation-delay:0.4s]" />
+                        <div className="bg-[#F1F5F9] dark:bg-white/5 p-3 rounded-2xl border border-border dark:border-white/10 flex gap-1">
+                            <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" />
+                            <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:0.2s]" />
+                            <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:0.4s]" />
                         </div>
                     </motion.div>
                 )}
             </div>
 
-            <div className="p-4 border-t border-white/10 space-y-4">
+            <div className="p-4 border-t border-border space-y-4">
                 <div className="grid grid-cols-1 gap-2">
                     {suggestions.map((s) => (
                         <button
                             key={s.text}
                             onClick={() => setInput(s.text)}
-                            className="px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-[10px] text-left text-zinc-400 hover:text-white transition-all flex items-center gap-2 group"
+                            className="px-3 py-2 bg-panel-secondary hover:bg-slate-200 border border-border rounded-xl text-[10px] text-left text-slate-500 hover:text-foreground transition-all flex items-center gap-2 group shadow-sm"
                         >
-                            <s.icon size={12} className="text-neon-purple group-hover:scale-110 transition-transform" />
+                            <s.icon size={12} className="text-cyber-blue group-hover:scale-110 transition-transform" />
                             {s.text}
                         </button>
                     ))}
@@ -103,15 +106,12 @@ export default function AIAssistant() {
                         onChange={(e) => setInput(e.target.value)}
                         onKeyPress={(e) => e.key === "Enter" && handleSend()}
                         placeholder="Type your message..."
-                        className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-4 pr-20 focus:outline-none focus:border-neon-purple focus:ring-1 focus:ring-neon-purple/30 transition-all text-xs"
+                        className="w-full bg-panel border border-border rounded-xl py-3 pl-4 pr-12 focus:outline-none focus:border-cyber-blue focus:ring-2 focus:ring-cyber-blue/10 transition-all text-xs text-foreground placeholder:text-slate-400"
                     />
-                    <div className="absolute right-2 top-1.5 flex gap-1">
-                        <button className="p-1.5 text-zinc-500 hover:text-cyber-blue transition-colors">
-                            <Mic size={16} />
-                        </button>
+                    <div className="absolute right-2 top-1.5">
                         <button
                             onClick={handleSend}
-                            className="p-1.5 bg-neon-purple text-white rounded-lg shadow-[0_0_10px_rgba(122,92,255,0.5)] hover:bg-neon-purple/80 transition-all"
+                            className="p-2 bg-cyber-blue text-white rounded-lg shadow-md hover:bg-blue-600 transition-all"
                         >
                             <Send size={16} />
                         </button>

@@ -1,14 +1,17 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: #0B0F14;
-  --color-foreground: #ffffff;
-  --color-cyber-blue: #00E5FF;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-cyber-blue: var(--cyber-blue);
   --color-neon-purple: #7A5CFF;
   --color-alert-red: #FF4C4C;
   --color-success-green: #00FF9C;
-  --color-glass: rgba(15, 23, 42, 0.6);
-  --color-glass-border: rgba(255, 255, 255, 0.1);
+  --color-glass: var(--panel);
+  --color-glass-border: var(--border);
+
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
 
   --font-tech: "Inter", system-ui, sans-serif;
 }
@@ -16,6 +19,38 @@
 :root {
   --background: #0B0F14;
   --foreground: #ffffff;
+  --panel: rgba(11, 15, 20, 0.7);
+  --border: rgba(255, 255, 255, 0.1);
+  --text-secondary: #94a3b8;
+  --text-muted: #71717a;
+  --cyber-blue: #00E5FF;
+  --grid-color: rgba(0, 229, 255, 0.07);
+}
+
+.light {
+  --background: #F5F7FA;
+  --foreground: #0F172A;
+  --panel: #FFFFFF;
+  --panel-secondary: #F1F5F9;
+  --border: #E2E8F0;
+  --border-hover: #CBD5F5;
+  --text-secondary: #475569;
+  --text-muted: #94A3B8;
+  --cyber-blue: #0EA5E9;
+  --grid-color: rgba(14, 165, 233, 0.05);
+}
+
+.dark {
+  --background: #0B0F14;
+  --foreground: #ffffff;
+  --panel: rgba(11, 15, 20, 0.7);
+  --panel-secondary: #111827;
+  --border: rgba(255, 255, 255, 0.1);
+  --border-hover: rgba(0, 229, 255, 0.3);
+  --text-secondary: #94a3b8;
+  --text-muted: #71717a;
+  --cyber-blue: #00E5FF;
+  --grid-color: rgba(0, 229, 255, 0.07);
 }
 
 body {
@@ -23,14 +58,23 @@ body {
   color: var(--foreground);
   font-family: var(--font-tech);
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 @layer utilities {
   .glass {
-    background: rgba(11, 15, 20, 0.7);
+    background: var(--panel);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+  }
+
+  .glass:hover {
+    border-color: var(--border-hover);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
   }
 
   .glow-blue {
@@ -70,8 +114,8 @@ body {
 }
 
 .grid-background {
-  background-image: 
-    linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
+  background-image:
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
   background-size: 40px 40px;
 }
