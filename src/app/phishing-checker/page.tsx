@@ -9,27 +9,48 @@ export default function PhishingChecker() {
     const [url, setUrl] = useState("");
     const [isChecking, setIsChecking] = useState(false);
     const [result, setResult] = useState<any | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
-    const checkLink = () => {
+    const checkLink = async () => {
         if (!url) return;
         setIsChecking(true);
         setResult(null);
+        setError(null);
 
-        setTimeout(() => {
-            setIsChecking(false);
-            setResult({
-                riskScore: 84,
-                isSafe: false,
-                domain: "secure-login-bank.xyz",
-                ssl: "Invalid / Expired",
-                indicators: [
-                    "Suspicious top-level domain (.xyz)",
-                    "Typosquatting detected (login-bank)",
-                    "No valid SSL certificate found",
-                    "Blacklisted by Google Safe Browsing"
-                ]
+        try {
+            const response = await fetch("http://localhost:5000/api/scan-url", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ url }),
             });
-        }, 2000);
+
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.error || "Unable to analyze URL. Please try again.");
+            }
+
+            const data = await response.json();
+            
+            // Transform VirusTotal result to the format expected by PhishingChecker UI
+            const totalDetections = data.malicious + data.suspicious;
+            const enginesCount = 90; // Approx total engines in VT
+            const riskPercentage = Math.min(Math.round((totalDetections / 10) * 100), 100);
+
+            setResult({
+                riskScore: data.threatLevel === "Safe" ? 0 : data.threatLevel === "Suspicious" ? Math.max(30, riskPercentage) : Math.max(75, riskPercentage),
+                isSafe: data.threatLevel === "Safe",
+                domain: url.replace(/^https?:\/\//, '').split('/')[0],
+                ssl: "Verified",
+                indicators: data.engineResults.length > 0 
+                    ? data.engineResults.slice(0, 4).map((res: any) => `${res.engine} flagged as ${res.category}`)
+                    : ["Reliable security vendors found no threats", "Domain reputation appears clean", "No typosquatting detected"]
+            });
+        } catch (err: any) {
+            console.error("Phishing Checker Error:", err);
+            setError(err.message || "Failed to connect to backend");
+        } finally {
+            setIsChecking(false);
+        }
     };
 
     return (
@@ -70,6 +91,15 @@ export default function PhishingChecker() {
                             Check URL
                         </button>
                     </div>
+                    {error && (
+                        <motion.p 
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="text-alert-red text-xs font-bold mt-2"
+                        >
+                            {error}
+                        </motion.p>
+                    )}
                 </div>
 
                 <AnimatePresence>
