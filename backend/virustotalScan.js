@@ -57,6 +57,23 @@ async function scanUrl(url, apiKey) {
             threatLevel = 'Suspicious';
         }
 
+        // Map engine results to the format expected by the frontend
+        const engineResults = Object.keys(analysisData.results || {}).map(engineName => {
+            const result = analysisData.results[engineName];
+            return {
+                engine: engineName,
+                category: result.category,
+                result: result.result,
+                method: result.method || 'unknown'
+            };
+        });
+
+        // Only include malicious or suspicious results for the detailed table, 
+        // but the frontend UI can filter this if needed. 
+        // For now, let's keep all and let the frontend decide, 
+        // or just return the detections if it's too many.
+        const detections = engineResults.filter(r => ['malicious', 'suspicious'].includes(r.category));
+
         return {
             threatLevel,
             malicious: stats.malicious,
@@ -64,7 +81,8 @@ async function scanUrl(url, apiKey) {
             harmless: stats.harmless,
             undetected: stats.undetected,
             scanDate: new Date().toISOString().split('T')[0],
-            analysisLink: `https://www.virustotal.com/gui/url/${analysisId.split('-')[1]}`
+            analysisLink: `https://www.virustotal.com/gui/url/${analysisId.split('-')[1]}`,
+            engineResults: detections.length > 0 ? detections : engineResults.slice(0, 10) // Show detections or first 10
         };
 
     } catch (error) {

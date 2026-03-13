@@ -33,7 +33,6 @@ export default function PhishingChecker() {
             
             // Transform VirusTotal result to the format expected by PhishingChecker UI
             const totalDetections = data.malicious + data.suspicious;
-            const enginesCount = 90; // Approx total engines in VT
             const riskPercentage = Math.min(Math.round((totalDetections / 10) * 100), 100);
 
             setResult({
@@ -41,7 +40,7 @@ export default function PhishingChecker() {
                 isSafe: data.threatLevel === "Safe",
                 domain: url.replace(/^https?:\/\//, '').split('/')[0],
                 ssl: "Verified",
-                indicators: data.engineResults.length > 0 
+                indicators: (data.engineResults && data.engineResults.length > 0)
                     ? data.engineResults.slice(0, 4).map((res: any) => `${res.engine} flagged as ${res.category}`)
                     : ["Reliable security vendors found no threats", "Domain reputation appears clean", "No typosquatting detected"]
             });
