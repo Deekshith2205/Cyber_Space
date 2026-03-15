@@ -13,6 +13,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { ReduxProvider } from "@/components/redux-provider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -21,9 +23,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${inter.className} min-h-screen bg-[#0B0F14] text-white selection:bg-cyber-blue/30 selection:text-cyber-blue`}>
-        <DashboardLayout>
-          {children}
-        </DashboardLayout>
+        <ReduxProvider>
+          <DashboardLayout>
+            {children}
+          </DashboardLayout>
+        </ReduxProvider>
       </body>
     </html>
   );

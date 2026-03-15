@@ -1,7 +1,6 @@
 "use client";
 
-import React from "react";
-import { User } from "lucide-react";
+import { useUser } from "@/lib/hooks/use-user";
 
 interface ProfileSettingsProps {
     data: {
@@ -12,21 +11,23 @@ interface ProfileSettingsProps {
 }
 
 export default function ProfileSettings({ data, onChange }: ProfileSettingsProps) {
+    const { user } = useUser();
+    
     return (
         <section className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
             <div className="space-y-4">
                 <div className="flex items-center gap-6 p-6 bg-panel border border-border rounded-2xl shadow-sm">
                     <div className="w-20 h-20 rounded-full border-4 border-cyber-blue p-1 relative group cursor-pointer overflow-hidden shadow-sm">
                         <div className="w-full h-full rounded-full bg-cyber-blue/10 flex items-center justify-center text-cyber-blue font-black text-2xl">
-                            {data.displayName.split(' ').map(n => n[0]).join('')}
+                            {user.avatarInitials}
                         </div>
                         <div className="absolute inset-0 bg-slate-900/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                             <span className="text-[10px] font-black text-white uppercase">Upload</span>
                         </div>
                     </div>
                     <div>
-                        <h4 className="text-lg font-bold text-foreground">{data.displayName || "Analyst Name"}</h4>
-                        <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Level 4 Senior Security Analyst</p>
+                        <h4 className="text-lg font-bold text-foreground">{user.name}</h4>
+                        <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">{user.role}</p>
                     </div>
                 </div>
 

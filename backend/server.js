@@ -1,13 +1,20 @@
+require('ts-node').register();
 require('dotenv').config();
 const express = require('express');
+const cors = require('cors');
 const { scanUrl } = require('./virustotalScan');
+const threatRoutes = require('./routes/threatRoutes').default;
+const userRoutes = require('./routes/userRoutes').default;
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+app.use(cors());
 app.use(express.json());
 
-// Basic CORS middleware
+// Routes
+app.use('/api/threat', threatRoutes);
+app.use('/api/user', userRoutes);
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');

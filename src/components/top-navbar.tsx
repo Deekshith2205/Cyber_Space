@@ -1,9 +1,11 @@
 "use client";
 
-import React from "react";
-import { Search, Bell, Mic, Shield } from "lucide-react";
+import { Search, Bell, Mic } from "lucide-react";
+import { useUser } from "@/lib/hooks/use-user";
 
 export default function Navbar() {
+  const { user } = useUser();
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-panel/80 backdrop-blur-md h-16 border-b border-border flex items-center justify-between px-6 shadow-sm">
       <div className="flex items-center gap-2">
@@ -44,11 +46,15 @@ export default function Navbar() {
 
         <div className="flex items-center gap-3 pl-4">
           <div className="text-right hidden sm:block">
-            <p className="text-sm font-semibold text-foreground">Anjan Majumdar</p>
-            <p className="text-xs text-cyber-blue font-medium">Level 4 Analyst</p>
+            <p className="text-sm font-semibold text-foreground">{user.name}</p>
+            <p className="text-xs text-cyber-blue font-medium">{user.role}</p>
           </div>
           <div className="w-10 h-10 rounded-full border-2 border-cyber-blue p-0.5 shadow-sm overflow-hidden cursor-pointer hover:scale-105 transition-transform">
-            <img src="https://ui-avatars.com/api/?name=Anjan+Majumdar&background=0EA5E9&color=FFFFFF" alt="Profile" className="w-full h-full rounded-full object-cover" />
+            <img 
+              src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=0EA5E9&color=FFFFFF`} 
+              alt="Profile" 
+              className="w-full h-full rounded-full object-cover" 
+            />
           </div>
         </div>
       </div>

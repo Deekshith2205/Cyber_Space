@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Send, User, Bot, Mic, Sparkles, MessageSquare, ShieldCheck, Info } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useUser } from "@/lib/hooks/use-user";
 
 const suggestions = [
     { text: "Explain phishing attack", icon: Sparkles },
@@ -13,8 +14,11 @@ const suggestions = [
 ];
 
 export default function AIAssistant() {
+    const { user } = useUser();
+    const firstName = user.name.split(' ')[0];
+    
     const [messages, setMessages] = useState([
-        { id: 1, role: "assistant", text: "Hello! I'm CYBERSPACE AI. How can I help you today?" }
+        { id: 1, role: "assistant", text: `Hello ${firstName}! I'm CYBERSPACE AI. How can I help you today?` }
     ]);
     const [input, setInput] = useState("");
     const [isTyping, setIsTyping] = useState(false);

@@ -11,6 +11,8 @@ import SecuritySettings from "@/components/settings/security-settings";
 import AppearanceSettings from "@/components/settings/appearance-settings";
 import DataManagementSettings from "@/components/settings/data-management-settings";
 
+import { useUser } from "@/lib/hooks/use-user";
+
 const TABS = [
     { id: "profile", label: "Profile", icon: User },
     { id: "notifications", label: "Notifications", icon: Bell },
@@ -42,8 +44,15 @@ const DEFAULT_SETTINGS = {
 };
 
 export default function SettingsPage() {
+    const { user, updateUser } = useUser();
     const [activeTab, setActiveTab] = useState("profile");
-    const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+    const [settings, setSettings] = useState({
+        ...DEFAULT_SETTINGS,
+        profile: {
+            displayName: user.name,
+            email: user.email
+        }
+    });
     const [showToast, setShowToast] = useState(false);
 
     // Load settings from localStorage on mount
@@ -51,7 +60,11 @@ export default function SettingsPage() {
         const saved = localStorage.getItem("cyberspace_settings");
         if (saved) {
             try {
-                setSettings(JSON.parse(saved));
+                const parsed = JSON.parse(saved);
+                setSettings(prev => ({
+                    ...prev,
+                    ...parsed,
+                }));
             } catch (e) {
                 console.error("Failed to parse settings", e);
             }
@@ -66,7 +79,7 @@ export default function SettingsPage() {
             document.documentElement.classList.add("dark");
             document.documentElement.classList.remove("light");
         }
-    }, []);
+    }, [user]);
 
     const handleSettingChange = (category: string, field: string, value: any) => {
         setSettings(prev => ({
@@ -79,6 +92,12 @@ export default function SettingsPage() {
     };
 
     const saveSettings = () => {
+        // Sync profile to Redux
+        updateUser({
+            name: settings.profile.displayName,
+            email: settings.profile.email
+        });
+
         localStorage.setItem("cyberspace_settings", JSON.stringify(settings));
         setShowToast(true);
         setTimeout(() => setShowToast(false), 3000);
@@ -102,6 +121,10 @@ export default function SettingsPage() {
     const handleReset = () => {
         if (confirm("Are you sure you want to reset all settings to defaults?")) {
             setSettings(DEFAULT_SETTINGS);
+            updateUser({
+                name: DEFAULT_SETTINGS.profile.displayName,
+                email: DEFAULT_SETTINGS.profile.email
+            });
             localStorage.setItem("cyberspace_settings", JSON.stringify(DEFAULT_SETTINGS));
             localStorage.setItem("theme", "dark");
             document.documentElement.classList.add("dark");
