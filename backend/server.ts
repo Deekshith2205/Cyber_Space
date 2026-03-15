@@ -4,6 +4,9 @@ import { config } from './config/apiKeys';
 import threatRoutes from './routes/threatRoutes';
 import connectDatabase from './config/database';
 import scanRoutes from './routes/scanRoutes';
+import authRoutes from './routes/authRoutes';
+import userRoutes from './routes/userRoutes';
+import adminRoutes from './routes/adminRoutes';
 
 const app = express();
 
@@ -14,6 +17,9 @@ app.use(cors());
 connectDatabase();
 
 // API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/user', userRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api/threat', threatRoutes);
 app.use('/api', scanRoutes);
 

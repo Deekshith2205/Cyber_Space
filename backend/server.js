@@ -5,8 +5,11 @@ const cors = require('cors');
 const { scanUrl } = require('./virustotalScan');
 const threatRoutes = require('./routes/threatRoutes').default;
 const userRoutes = require('./routes/userRoutes').default;
+const adminRoutes = require('./routes/adminRoutes').default;
 const connectDatabase = require('./config/database').default;
 const scanRoutes = require('./routes/scanRoutes').default;
+const authRoutes = require('./routes/authRoutes').default;
+const authMiddleware = require('./middleware/authMiddleware').default;
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -18,6 +21,9 @@ app.use(express.json());
 connectDatabase();
 
 // Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/user', userRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api/threat', threatRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api', scanRoutes);
@@ -29,7 +35,7 @@ app.use((req, res, next) => {
     next();
 });
 
-app.post('/api/scan-url', async (req, res) => {
+app.post('/api/scan-url', authMiddleware, async (req, res) => {
     const { url } = req.body;
     const apiKey = process.env.VIRUSTOTAL_API_KEY;
 

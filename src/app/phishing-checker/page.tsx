@@ -6,6 +6,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
+import { useSelector } from "react-redux";
+import { RootState } from "@/lib/store/store";
+
 type ThreatChecks = {
     google_safe_browsing?: boolean;
     https_secure?: boolean;
@@ -29,6 +32,8 @@ export default function PhishingChecker() {
     const [result, setResult] = useState<ThreatResult | null>(null);
     const [error, setError] = useState<string | null>(null);
 
+    const { token } = useSelector((state: RootState) => state.auth);
+
     const checkLink = async () => {
         if (!url) return;
         setIsChecking(true);
@@ -38,7 +43,10 @@ export default function PhishingChecker() {
         try {
             const response = await fetch("http://localhost:5000/api/phishing/check", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
                 body: JSON.stringify({ url }),
             });
 

@@ -1,9 +1,11 @@
 import { Request, Response } from 'express';
 import axios from 'axios';
 import PhishingScan from '../models/PhishingScan';
+import UserActivityLog from '../models/UserActivityLog';
+import { AuthRequest } from '../middleware/authMiddleware';
 
 export class PhishingController {
-    static async checkPhishing(req: Request, res: Response) {
+    static async checkPhishing(req: AuthRequest, res: Response) {
         const { url } = req.body;
 
         if (!url) {
@@ -56,12 +58,22 @@ export class PhishingController {
                 threatStatus: analysisData.status,
                 confidenceScore: analysisData.risk_score,
                 scanSource: scanSource,
-                scanDate: new Date()
+                scanDate: new Date(),
+                userId: req.user._id,
+                username: req.user.name
             });
 
             await scan.save();
 
-            // 3. Return full analysis to frontend
+            // 3. Log user activity
+            await UserActivityLog.create({
+                userId: req.user._id,
+                username: req.user.name,
+                actionType: 'Phishing Scan',
+                target: url
+            });
+
+            // 4. Return full analysis to frontend
             res.status(200).json(analysisData);
 
         } catch (error: any) {

@@ -6,6 +6,8 @@ export interface IPhishingScan extends Document {
     confidenceScore: number;
     scanSource: string;
     scanDate: Date;
+    userId: string;
+    username: string;
 }
 
 const PhishingScanSchema: Schema = new Schema({
@@ -13,7 +15,9 @@ const PhishingScanSchema: Schema = new Schema({
     threatStatus: { type: String, required: true },
     confidenceScore: { type: Number, required: true },
     scanSource: { type: String, default: 'Google Safe Browsing' },
-    scanDate: { type: Date, default: Date.now }
+    scanDate: { type: Date, default: Date.now },
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    username: { type: String, required: true }
 });
 
 export default mongoose.model<IPhishingScan>('PhishingScan', PhishingScanSchema);

@@ -12,12 +12,15 @@ import {
     GraduationCap,
     Settings,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    LogOut
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
+import { logout } from "@/lib/store/auth-slice";
 
 const menuItems = [
     { icon: LayoutDashboard, label: "Dashboard", id: "dashboard", href: "/dashboard" },
@@ -34,6 +37,13 @@ const menuItems = [
 export default function Sidebar() {
     const [collapsed, setCollapsed] = useState(false);
     const pathname = usePathname();
+    const router = useRouter();
+    const dispatch = useDispatch();
+
+    const handleLogout = () => {
+        dispatch(logout());
+        router.push('/login');
+    };
 
     return (
         <aside
@@ -90,6 +100,14 @@ export default function Sidebar() {
                             </div>
                         </div>
                     )}
+
+                    <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-red-500 hover:bg-red-500/10 transition-all mb-2"
+                    >
+                        <LogOut size={20} />
+                        {!collapsed && <span className="text-sm font-medium">Clearance Exit (Logout)</span>}
+                    </button>
 
                     <button
                         onClick={() => setCollapsed(!collapsed)}
