@@ -5,6 +5,8 @@ const cors = require('cors');
 const { scanUrl } = require('./virustotalScan');
 const threatRoutes = require('./routes/threatRoutes').default;
 const userRoutes = require('./routes/userRoutes').default;
+const connectDatabase = require('./config/database').default;
+const scanRoutes = require('./routes/scanRoutes').default;
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -12,9 +14,14 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+// Connect to MongoDB
+connectDatabase();
+
 // Routes
 app.use('/api/threat', threatRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api', scanRoutes);
+
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
@@ -43,5 +50,5 @@ app.post('/api/scan-url', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`CyberSpace backend running on port ${PORT}`);
 });
