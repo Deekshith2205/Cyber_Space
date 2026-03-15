@@ -14,17 +14,24 @@ import {
 } from "recharts";
 import { TrendingUp } from "lucide-react";
 
-const data = [
-    { name: "Jan", threats: 4000 },
-    { name: "Feb", threats: 3000 },
-    { name: "Mar", threats: 2000 },
-    { name: "Apr", threats: 2780 },
-    { name: "May", threats: 1890 },
-    { name: "Jun", threats: 2390 },
-    { name: "Jul", threats: 3490 },
-];
+import { useEffect, useState } from "react";
+import axios from 'axios';
 
 export default function ThreatTrends() {
+    const [data, setData] = useState<{name: string, threats: number}[]>([]);
+
+    useEffect(() => {
+        const fetchTrends = async () => {
+            try {
+                const response = await axios.get('http://localhost:5000/api/threat/trends');
+                setData(response.data);
+            } catch (error) {
+                console.error("Error fetching threat trends:", error);
+            }
+        };
+
+        fetchTrends();
+    }, []);
     return (
         <div className="glass p-6 rounded-3xl border border-white/10 h-[300px] flex flex-col group">
             <div className="flex items-center justify-between mb-6">

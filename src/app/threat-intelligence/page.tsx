@@ -1,12 +1,28 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ThreatMap from "@/components/dashboard/ThreatMap";
 import ThreatTrends from "@/components/dashboard/ThreatTrends";
 import VulnerabilityTable from "@/components/dashboard/VulnerabilityTable";
 import { Activity, ShieldAlert, Globe, Server } from "lucide-react";
+import axios from "axios";
+
+type TopCVE = { id: string; target: string; risk: number; };
 
 export default function ThreatIntelligencePage() {
+    const [topCVEs, setTopCVEs] = useState<TopCVE[]>([]);
+    
+    useEffect(() => {
+        const fetchCVEs = async () => {
+            try {
+                const response = await axios.get('http://localhost:5000/api/threat/cves');
+                setTopCVEs(response.data);
+            } catch (error) {
+                console.error('Error fetching Top CVE Targets:', error);
+            }
+        };
+        fetchCVEs();
+    }, []);
     return (
         <div className="space-y-8 pt-6 animate-in fade-in slide-in-from-bottom-4 duration-1000 pb-12">
             <div className="flex flex-col gap-2">
@@ -49,19 +65,19 @@ export default function ThreatIntelligencePage() {
                     <div className="glass p-8 rounded-[2rem] border border-white/10 space-y-6">
                         <h3 className="text-sm font-bold text-white uppercase tracking-widest px-2">Top CVE Targets</h3>
                         <div className="space-y-4">
-                            {[
-                                { id: "CVE-2025-001", target: "Web Infrastructure", risk: "98/100" },
-                                { id: "CVE-2025-002", target: "Kubernetes Cluster", risk: "92/100" },
-                                { id: "CVE-2025-003", target: "DDoS Mitigation", risk: "89/100" }
-                            ].map((cve) => (
-                                <div key={cve.id} className="p-4 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-between group cursor-pointer hover:border-cyber-blue/20 transition-all">
-                                    <div>
-                                        <h4 className="text-xs font-bold text-cyber-blue">{cve.id}</h4>
-                                        <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mt-1">{cve.target}</p>
+                            {topCVEs.length > 0 ? (
+                                topCVEs.map((cve) => (
+                                    <div key={cve.id} className="p-4 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-between group cursor-pointer hover:border-cyber-blue/20 transition-all">
+                                        <div>
+                                            <h4 className="text-xs font-bold text-cyber-blue">{cve.id}</h4>
+                                            <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mt-1">{cve.target}</p>
+                                        </div>
+                                        <span className="text-xs font-black text-alert-red">{cve.risk}/100 Risk</span>
                                     </div>
-                                    <span className="text-xs font-black text-alert-red">{cve.risk} Risk</span>
-                                </div>
-                            ))}
+                                ))
+                            ) : (
+                                <div className="text-xs text-zinc-500 animate-pulse text-center mt-6">Loading vulnerability intelligence...</div>
+                            )}
                         </div>
                     </div>
                 </div>
