@@ -6,8 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
-import { useSelector } from "react-redux";
-import { RootState } from "@/lib/store/store";
+import { useAuth } from "@/context/AuthContext";
 
 type ThreatChecks = {
     google_safe_browsing?: boolean;
@@ -32,7 +31,7 @@ export default function PhishingChecker() {
     const [result, setResult] = useState<ThreatResult | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    const { token } = useSelector((state: RootState) => state.auth);
+    const { token } = useAuth();
 
     const checkLink = async () => {
         if (!url) return;

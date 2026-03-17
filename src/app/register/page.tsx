@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import { Shield, User, Lock, Mail, ChevronRight, AlertCircle, Loader2 } from 'lucide-react';
 
@@ -12,6 +13,7 @@ export default function RegisterPage() {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     
+    const { register } = useAuth();
     const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -20,21 +22,9 @@ export default function RegisterPage() {
         setLoading(true);
 
         try {
-            const response = await fetch('http://localhost:5000/api/auth/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, email, password }),
-            });
-
-            const data = await response.json();
-
-            if (data.status === 'success') {
-                router.push('/login');
-            } else {
-                setError(data.message || 'Registration failed');
-            }
-        } catch (err) {
-            setError('System error: Unable to reach authentication server');
+            await register(name, email, password);
+        } catch (err: any) {
+            setError(err.message || 'Registration failed');
         } finally {
             setLoading(false);
         }

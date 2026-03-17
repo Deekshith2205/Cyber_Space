@@ -1,10 +1,11 @@
 "use client";
 
-import { Search, Bell, Mic } from "lucide-react";
-import { useUser } from "@/lib/hooks/use-user";
+import { Search, Bell, Mic, LogOut } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import Link from "next/link";
 
 export default function Navbar() {
-  const { user } = useUser();
+  const { user, logout, isAuthenticated } = useAuth();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-panel/80 backdrop-blur-md h-16 border-b border-border flex items-center justify-between px-6 shadow-sm">
@@ -44,19 +45,39 @@ export default function Navbar() {
           </span>
         </button>
 
-        <div className="flex items-center gap-3 pl-4">
-          <div className="text-right hidden sm:block">
-            <p className="text-sm font-semibold text-foreground">{user.name}</p>
-            <p className="text-xs text-cyber-blue font-medium">{user.role}</p>
+        {isAuthenticated && user ? (
+          <div className="flex items-center gap-3 pl-4">
+            <div className="text-right hidden sm:block">
+              <p className="text-sm font-semibold text-foreground">{user.name}</p>
+              <p className="text-[10px] text-cyber-blue font-bold uppercase tracking-wider">{user.designation || 'USER'}</p>
+            </div>
+            <div className="group relative">
+              <div className="w-10 h-10 rounded-full border-2 border-cyber-blue p-0.5 shadow-sm overflow-hidden cursor-pointer hover:scale-105 transition-transform">
+                <img 
+                  src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=0EA5E9&color=FFFFFF`} 
+                  alt="Profile" 
+                  className="w-full h-full rounded-full object-cover" 
+                />
+              </div>
+              <div className="absolute top-12 right-0 bg-[#15191E] border border-white/10 rounded-xl p-2 w-32 shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all">
+                <button 
+                  onClick={logout}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                >
+                  <LogOut size={14} />
+                  LOGOUT
+                </button>
+              </div>
+            </div>
           </div>
-          <div className="w-10 h-10 rounded-full border-2 border-cyber-blue p-0.5 shadow-sm overflow-hidden cursor-pointer hover:scale-105 transition-transform">
-            <img 
-              src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=0EA5E9&color=FFFFFF`} 
-              alt="Profile" 
-              className="w-full h-full rounded-full object-cover" 
-            />
-          </div>
-        </div>
+        ) : (
+          <Link 
+            href="/login" 
+            className="bg-cyber-blue text-black font-bold text-xs px-6 py-2 rounded-xl hover:shadow-[0_0_15px_rgba(0,243,255,0.4)] transition-all"
+          >
+            LOGIN
+          </Link>
+        )}
       </div>
     </nav>
   );

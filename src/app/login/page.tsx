@@ -2,8 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useDispatch } from 'react-redux';
-import { setCredentials } from '@/lib/store/auth-slice';
+import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import { Shield, Lock, Mail, ChevronRight, AlertCircle, Loader2 } from 'lucide-react';
 
@@ -13,8 +12,8 @@ export default function LoginPage() {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     
+    const { login } = useAuth();
     const router = useRouter();
-    const dispatch = useDispatch();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -22,22 +21,9 @@ export default function LoginPage() {
         setLoading(true);
 
         try {
-            const response = await fetch('http://localhost:5000/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
-            });
-
-            const data = await response.json();
-
-            if (data.status === 'success') {
-                dispatch(setCredentials({ user: data.user, token: data.token }));
-                router.push('/dashboard');
-            } else {
-                setError(data.message || 'Authentication failed');
-            }
-        } catch (err) {
-            setError('System error: Unable to reach authentication server');
+            await login(email, password);
+        } catch (err: any) {
+            setError(err.message || 'Authentication failed');
         } finally {
             setLoading(false);
         }

@@ -25,18 +25,18 @@ export const saveProfileToServer = createAsyncThunk(
 );
 
 const getInitialProfile = (): UserProfile => {
-  const defaultProfile = {
-    id: "analyst-001",
-    name: "Anjan Majumdar",
-    email: "anjan@cyberspace.ai",
-    role: "Level 4 Senior Security Analyst",
-    avatarInitials: "AM",
-    clearanceLevel: 4,
+  const defaultProfile: UserProfile = {
+    id: "",
+    name: "",
+    email: "",
+    role: "Analyst",
+    avatarInitials: "",
+    clearanceLevel: 0,
   };
 
   if (typeof window !== 'undefined') {
     const saved = localStorage.getItem('cyberspace_analyst_profile');
-    if (saved) {
+    if (saved && saved !== "undefined") {
       try {
         return JSON.parse(saved);
       } catch (e) {

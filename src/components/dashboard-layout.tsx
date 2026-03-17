@@ -5,27 +5,35 @@ import TopNavbar from "@/components/top-navbar";
 import Sidebar from "@/components/sidebar";
 import AIAssistantPanel from "@/components/ai-assistant-panel";
 import CyberBackground from "@/components/ui/CyberBackground";
+import { usePathname } from "next/navigation";
 
-import AuthGuard from "@/components/auth-guard";
 
 export default function DashboardLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    return (
-        <AuthGuard>
-            <div className="relative z-10 min-h-screen bg-background text-foreground transition-colors duration-300">
-                <TopNavbar />
-                <Sidebar />
-                <main className="pl-64 pr-80 pt-16 min-h-screen transition-all duration-300 grid-background">
-                    <div className="max-w-[1600px] mx-auto px-8">
-                        {children}
-                    </div>
-                </main>
-                <AIAssistantPanel />
-                <CyberBackground />
+    const pathname = usePathname();
+    const isPublicRoute = ['/login', '/register'].includes(pathname);
+
+    if (isPublicRoute) {
+        return (
+            <div className="relative z-10 min-h-screen bg-[#0B0F14]">
+                {children}
             </div>
-        </AuthGuard>
+        );
+    }
+    return (
+        <div className="relative z-10 min-h-screen bg-background text-foreground transition-colors duration-300">
+            <TopNavbar />
+            <Sidebar />
+            <main className="pl-64 pr-80 pt-16 min-h-screen transition-all duration-300 grid-background">
+                <div className="max-w-[1600px] mx-auto px-8">
+                    {children}
+                </div>
+            </main>
+            <AIAssistantPanel />
+            <CyberBackground />
+        </div>
     );
 }

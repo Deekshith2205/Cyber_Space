@@ -14,8 +14,10 @@ import ThreatMap from "@/components/dashboard/ThreatMap";
 import VulnerabilityTable from "@/components/dashboard/VulnerabilityTable";
 import ThreatTrends from "@/components/dashboard/ThreatTrends";
 import { motion } from "framer-motion";
+import { useAuth } from "@/context/AuthContext";
 
 export default function DashboardPage() {
+    const { user } = useAuth();
     return (
         <div className="space-y-6 pt-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -26,7 +28,9 @@ export default function DashboardPage() {
                             System Secure
                         </span>
                     </h2>
-                    <p className="text-zinc-500 text-sm mt-1">Welcome back, Agent. Your security posture is currently optimal.</p>
+                    <p className="text-zinc-500 text-sm mt-1">
+                        Welcome back, {user?.name || 'Agent'}. Your security posture is currently optimal.
+                    </p>
                 </div>
                 <div className="flex items-center gap-2 text-xs font-bold text-zinc-500 uppercase tracking-widest bg-white/5 border border-white/10 px-4 py-2 rounded-2xl">
                     <History size={14} className="text-cyber-blue" />

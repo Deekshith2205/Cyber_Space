@@ -30,7 +30,8 @@ export class AuthController {
                         _id: user._id,
                         name: user.name,
                         email: user.email,
-                        role: user.role
+                        role: user.role,
+                        designation: user.designation || "user"
                     }
                 });
             } else {
@@ -59,7 +60,8 @@ export class AuthController {
                         _id: user._id,
                         name: user.name,
                         email: user.email,
-                        role: user.role
+                        role: user.role,
+                        designation: user.designation || "user"
                     }
                 });
             } else {
@@ -68,6 +70,32 @@ export class AuthController {
         } catch (error: any) {
             console.error('Login error:', error);
             res.status(500).json({ status: "error", message: "Server error during login" });
+        }
+    }
+    
+    // @desc    Get current user profile
+    // @route   GET /api/auth/me
+    // @access  Private
+    static async getMe(req: any, res: Response) {
+        try {
+            const user = await User.findById(req.user._id).select('-password');
+            if (user) {
+                res.json({
+                    status: "success",
+                    user: {
+                        _id: user._id,
+                        name: user.name,
+                        email: user.email,
+                        role: user.role,
+                        designation: user.designation || "user"
+                    }
+                });
+            } else {
+                res.status(404).json({ status: "error", message: "User not found" });
+            }
+        } catch (error: any) {
+            console.error('Get profile error:', error);
+            res.status(500).json({ status: "error", message: "Server error while fetching profile" });
         }
     }
 }

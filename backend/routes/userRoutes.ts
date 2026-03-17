@@ -5,5 +5,6 @@ import authMiddleware from '../middleware/authMiddleware';
 const router = express.Router();
 
 router.get('/scans', authMiddleware, UserController.getUserScans);
+router.put('/update', authMiddleware, UserController.updateProfile);
 
 export default router;

@@ -86,8 +86,9 @@ async function scanUrl(url, apiKey) {
         };
 
     } catch (error) {
-        console.error('VirusTotal API Error:', error.response?.data || error.message);
-        throw new Error('Unable to analyze URL. Please try again.');
+        console.error('VirusTotal API Error Details:', error.response?.data || error.message);
+        const vtErrorMessage = error.response?.data?.error?.message || error.message;
+        throw new Error(`VirusTotal Analysis Failed: ${vtErrorMessage}`);
     }
 }
 

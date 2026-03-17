@@ -11,7 +11,7 @@ import SecuritySettings from "@/components/settings/security-settings";
 import AppearanceSettings from "@/components/settings/appearance-settings";
 import DataManagementSettings from "@/components/settings/data-management-settings";
 
-import { useUser } from "@/lib/hooks/use-user";
+import { useAuth } from "@/context/AuthContext";
 
 const TABS = [
     { id: "profile", label: "Profile", icon: User },
@@ -23,8 +23,9 @@ const TABS = [
 
 const DEFAULT_SETTINGS = {
     profile: {
-        displayName: "Anjan Majumdar",
-        email: "anjan@cyberspace.ai"
+        displayName: "",
+        email: "",
+        designation: "user"
     },
     notifications: {
         threatAlerts: true,
@@ -44,16 +45,32 @@ const DEFAULT_SETTINGS = {
 };
 
 export default function SettingsPage() {
-    const { user, updateUser } = useUser();
+    const { user, updateProfile } = useAuth();
     const [activeTab, setActiveTab] = useState("profile");
+    const [isSaving, setIsSaving] = useState(false);
     const [settings, setSettings] = useState({
         ...DEFAULT_SETTINGS,
         profile: {
-            displayName: user.name,
-            email: user.email
+            displayName: user?.name || "",
+            email: user?.email || "",
+            designation: user?.designation || "user"
         }
     });
     const [showToast, setShowToast] = useState(false);
+
+    // Sync settings with user data when it loads
+    useEffect(() => {
+        if (user) {
+            setSettings(prev => ({
+                ...prev,
+                profile: {
+                    displayName: user.name,
+                    email: user.email,
+                    designation: user.designation || "user"
+                }
+            }));
+        }
+    }, [user]);
 
     // Load settings from localStorage on mount
     useEffect(() => {
@@ -64,6 +81,11 @@ export default function SettingsPage() {
                 setSettings(prev => ({
                     ...prev,
                     ...parsed,
+                    profile: {
+                        displayName: user?.name || prev.profile.displayName,
+                        email: user?.email || prev.profile.email,
+                        designation: user?.designation || prev.profile.designation || "user"
+                    }
                 }));
             } catch (e) {
                 console.error("Failed to parse settings", e);
@@ -81,6 +103,12 @@ export default function SettingsPage() {
         }
     }, [user]);
 
+    const isDirty = user && (
+        settings.profile.displayName !== user.name || 
+        settings.profile.email !== user.email ||
+        settings.profile.designation !== (user.designation || "user")
+    );
+
     const handleSettingChange = (category: string, field: string, value: any) => {
         setSettings(prev => ({
             ...prev,
@@ -91,16 +119,38 @@ export default function SettingsPage() {
         }));
     };
 
-    const saveSettings = () => {
-        // Sync profile to Redux
-        updateUser({
-            name: settings.profile.displayName,
-            email: settings.profile.email
-        });
+    const saveSettings = async () => {
+        if (!settings.profile.displayName.trim()) {
+            alert("Name cannot be empty");
+            return;
+        }
+        
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(settings.profile.email)) {
+            alert("Please enter a valid email address");
+            return;
+        }
 
-        localStorage.setItem("cyberspace_settings", JSON.stringify(settings));
-        setShowToast(true);
-        setTimeout(() => setShowToast(false), 3000);
+        if (settings.profile.designation.length < 3) {
+            alert("Designation must be at least 3 characters long");
+            return;
+        }
+
+        setIsSaving(true);
+        try {
+            await updateProfile(
+                settings.profile.displayName, 
+                settings.profile.email, 
+                settings.profile.designation
+            );
+            localStorage.setItem("cyberspace_settings", JSON.stringify(settings));
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 3000);
+        } catch (error: any) {
+            alert(error.message || "Failed to update profile");
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const handleExport = () => {
@@ -121,10 +171,9 @@ export default function SettingsPage() {
     const handleReset = () => {
         if (confirm("Are you sure you want to reset all settings to defaults?")) {
             setSettings(DEFAULT_SETTINGS);
-            updateUser({
-                name: DEFAULT_SETTINGS.profile.displayName,
-                email: DEFAULT_SETTINGS.profile.email
-            });
+            // Since we can't easily "reset" backend without a specific endpoint,
+            // we'll just alert the user or implement a reset profile if needed.
+            // For now, satisfy the UI reset.
             localStorage.setItem("cyberspace_settings", JSON.stringify(DEFAULT_SETTINGS));
             localStorage.setItem("theme", "dark");
             document.documentElement.classList.add("dark");
@@ -190,16 +239,29 @@ export default function SettingsPage() {
 
                     <div className="pt-6 flex justify-end items-center gap-4">
                         <button
-                            onClick={() => setSettings(DEFAULT_SETTINGS)}
+                            onClick={() => user && setSettings(prev => ({
+                                ...prev,
+                                profile: {
+                                    displayName: user.name,
+                                    email: user.email,
+                                    designation: user.designation || "user"
+                                }
+                            }))}
                             className="px-6 py-3 text-sm font-semibold text-slate-500 hover:text-foreground transition-all"
                         >
                             Discard Changes
                         </button>
                         <button
                             onClick={saveSettings}
-                            className="px-10 py-3.5 bg-gradient-to-b from-[#0EA5E9] to-[#0284C7] text-white font-semibold rounded-[12px] shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center gap-2"
+                            disabled={!isDirty || isSaving}
+                            className={cn(
+                                "px-10 py-3.5 text-white font-semibold rounded-[12px] shadow-md transition-all flex items-center gap-2",
+                                isDirty && !isSaving
+                                    ? "bg-gradient-to-b from-[#0EA5E9] to-[#0284C7] hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0"
+                                    : "bg-slate-300 dark:bg-zinc-800 text-slate-500 dark:text-zinc-600 cursor-not-allowed shadow-none"
+                            )}
                         >
-                            Save Parameters <Save size={18} />
+                            {isSaving ? "Updating Parameters..." : "Save Parameters"} <Save size={18} className={isSaving ? "animate-spin" : ""} />
                         </button>
                     </div>
 
