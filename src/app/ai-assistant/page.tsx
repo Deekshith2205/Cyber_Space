@@ -99,7 +99,7 @@ function TypewriterText({ text, speed = 18 }: { text: string; speed?: number }) 
         <>
             <HighlightText text={displayed} />
             {displayed.length < text.length && (
-                <span className="inline-block w-[2px] h-[13px] bg-neon-purple ml-0.5 animate-pulse align-middle" />
+                <span className="inline-block w-[2px] h-[13px] bg-cyber-blue ml-0.5 animate-pulse align-middle" />
             )}
         </>
     );
@@ -118,29 +118,29 @@ function ThreatCard({ analysis }: { analysis: AIAnalysisResult }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.35 }}
             className={cn(
-                "rounded-2xl border border-white/10 overflow-hidden bg-white/[0.03] backdrop-blur",
+                "rounded-2xl border border-border overflow-hidden bg-panel/30 backdrop-blur shadow-premium",
                 sev.glow
             )}
         >
             {/* Top bar */}
-            <div className="flex items-center gap-3 px-5 py-4 border-b border-white/8">
-                <div className="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center text-neon-purple shadow-[0_0_10px_rgba(122,92,255,0.1)]">
+            <div className="flex items-center gap-3 px-5 py-4 border-b border-border/10 ring-1 ring-inset ring-foreground/2">
+                <div className="w-9 h-9 rounded-xl bg-foreground/5 flex items-center justify-center text-cyber-blue shadow-sm">
                     <Icon size={18} />
                 </div>
                 <div className="flex-1 min-w-0">
-                    <p className="text-xs text-text-secondary uppercase tracking-widest font-bold">Threat Detected</p>
-                    <h3 className="font-bold text-white truncate text-glow-primary">{analysis.threat_type}</h3>
+                    <p className="text-[10px] text-text-muted uppercase tracking-widest font-black">Threat Detected</p>
+                    <h3 className="font-bold text-foreground truncate text-glow-primary">{analysis.threat_type}</h3>
                 </div>
-                <span className={cn("px-3 py-1 rounded-full text-[11px] font-black border uppercase tracking-wider", sev.badge)}>
+                <span className={cn("px-3 py-1 rounded-full text-[11px] font-black border uppercase tracking-wider shadow-sm", sev.badge)}>
                     {analysis.severity}
                 </span>
             </div>
 
             {/* Severity bar */}
-            <div className="px-5 py-2 bg-black/20">
+            <div className="px-5 py-2 bg-foreground/5">
                 <div className="flex items-center gap-3">
-                    <span className="text-[10px] text-text-secondary uppercase tracking-widest font-bold w-16 shrink-0">Risk Level</span>
-                    <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                    <span className="text-[10px] text-text-muted uppercase tracking-widest font-black w-16 shrink-0">Risk Level</span>
+                    <div className="flex-1 h-1.5 bg-foreground/10 rounded-full overflow-hidden shadow-inner">
                         <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${barWidth}%` }}
@@ -148,7 +148,7 @@ function ThreatCard({ analysis }: { analysis: AIAnalysisResult }) {
                             className={cn("h-full rounded-full", sev.bar)}
                         />
                     </div>
-                    <span className="text-[10px] text-text-secondary font-medium shrink-0 max-w-[140px] truncate">{analysis.risk_level}</span>
+                    <span className="text-[10px] text-text-secondary font-bold shrink-0 max-w-[140px] truncate">{analysis.risk_level}</span>
                 </div>
             </div>
 
@@ -160,16 +160,16 @@ function ThreatCard({ analysis }: { analysis: AIAnalysisResult }) {
             </div>
 
             {/* Tabs: Solution / Prevention */}
-            <div className="flex border-b border-white/5">
+            <div className="flex border-b border-border/10">
                 {(["solution", "prevention"] as const).map((t) => (
                     <button
                         key={t}
                         onClick={() => setTab(t)}
                         className={cn(
-                            "flex-1 py-2.5 text-xs font-bold uppercase tracking-widest transition-all",
+                            "flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all",
                             tab === t
-                                ? "text-neon-purple border-b-2 border-neon-purple bg-neon-purple/5"
-                                : "text-zinc-600 hover:text-zinc-400"
+                                ? "text-cyber-blue border-b-2 border-cyber-blue bg-cyber-blue/5"
+                                : "text-text-muted hover:text-text-secondary"
                         )}
                     >
                         {t === "solution" ? "🛡️ Solution" : "🔒 Prevention"}
@@ -218,12 +218,12 @@ function HistoryPanel({
         <div className="space-y-2">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <Clock size={12} className="text-neon-purple" />
-                    <p className="text-xs font-bold text-white uppercase tracking-widest">Past Queries</p>
+                    <Clock size={12} className="text-cyber-blue" />
+                    <p className="text-[10px] font-black text-foreground uppercase tracking-widest">Past Queries</p>
                 </div>
                 <button
                     onClick={onRefresh}
-                    className="text-zinc-600 hover:text-zinc-300 transition-colors"
+                    className="text-text-muted hover:text-foreground transition-colors"
                     title="Refresh history"
                 >
                     <RefreshCw size={12} className={isLoading ? "animate-spin" : ""} />
@@ -336,13 +336,16 @@ export default function AIAssistantPage() {
             {/* Page Header */}
             <div className="flex items-center justify-between">
                 <div className="flex flex-col gap-1">
-                    <h2 className="text-2xl font-black text-white tracking-tight text-glow-primary">AI Cyber Assistant</h2>
+                    <h2 className="text-2xl font-black text-foreground tracking-tight flex items-center gap-2">
+                        <Bot className="text-cyber-blue" />
+                        AI Cyber Assistant
+                    </h2>
                     <p className="text-text-secondary text-sm">Powered by Google Gemini · Cybersecurity domain only</p>
                 </div>
                 {hasMessages && (
                     <button
                         onClick={() => { clearMessages(); fetchHistory(); }}
-                        className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-white/10 text-zinc-500 hover:text-white hover:border-white/20 text-xs transition-all"
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-border text-text-muted hover:text-foreground hover:bg-foreground/5 text-xs transition-all shadow-sm"
                     >
                         <Trash2 size={12} /> Clear Chat
                     </button>
@@ -352,17 +355,17 @@ export default function AIAssistantPage() {
             <div className="flex gap-6 h-[calc(100vh-14rem)]">
 
                 {/* ── Left: Chat area ── */}
-                <div className="flex-1 flex flex-col glass rounded-3xl border border-white/10 overflow-hidden min-w-0">
+                <div className="flex-1 flex flex-col glass rounded-3xl border border-border overflow-hidden min-w-0 shadow-premium">
                     {/* Chat header */}
-                    <div className="px-6 py-4 border-b border-white/8 flex items-center gap-3 bg-white/[0.02]">
-                        <div className="w-9 h-9 rounded-full bg-neon-purple/20 flex items-center justify-center text-neon-purple glow-purple">
+                    <div className="px-6 py-4 border-b border-border/10 flex items-center gap-3 bg-foreground/[0.02]">
+                        <div className="w-9 h-9 rounded-full bg-cyber-blue/10 border border-cyber-blue/20 flex items-center justify-center text-cyber-blue shadow-sm">
                             <Bot size={18} />
                         </div>
                         <div>
-                            <p className="font-bold text-white text-sm text-glow-blue">CYBERSPACE Intelligence Engine</p>
-                            <p className="text-[10px] text-text-secondary uppercase tracking-widest font-bold">Gemini · Context-Aware · Neural Security Model</p>
+                            <p className="font-bold text-foreground text-sm tracking-tight">CYBERSPACE Intelligence Engine</p>
+                            <p className="text-[10px] text-text-muted uppercase tracking-widest font-black">Gemini · Context-Aware · Neural Security Model</p>
                         </div>
-                        <div className="ml-auto px-3 py-1 rounded-full bg-success-green/10 border border-success-green/20 text-[10px] text-success-green font-bold uppercase tracking-widest">
+                        <div className="ml-auto px-3 py-1 rounded-full bg-success-green/10 border border-success-green/20 text-[10px] text-success-green font-bold uppercase tracking-widest shadow-sm">
                             Online
                         </div>
                     </div>
@@ -403,16 +406,16 @@ export default function AIAssistantPage() {
                                     className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                                 >
                                     {msg.role === "user" ? (
-                                        <div className="max-w-[75%] px-5 py-3 rounded-2xl rounded-br-md bg-neon-purple/20 border border-neon-purple/40 text-white text-sm leading-relaxed shadow-[0_0_15px_rgba(122,92,255,0.1)]">
+                                        <div className="max-w-[75%] px-5 py-3 rounded-2xl rounded-br-md bg-cyber-blue/10 border border-cyber-blue/20 text-foreground text-sm leading-relaxed shadow-sm">
                                             {msg.text}
                                         </div>
                                     ) : msg.isDomainBlocked ? (
-                                        <div className="max-w-[75%] px-5 py-3 rounded-2xl rounded-bl-md bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-sm flex gap-2 items-start shadow-[0_0_10px_rgba(234,179,8,0.1)]">
+                                        <div className="max-w-[75%] px-5 py-3 rounded-2xl rounded-bl-md bg-yellow-500/10 border border-yellow-500/30 text-yellow-600 dark:text-yellow-400 text-sm flex gap-2 items-start shadow-sm">
                                             <AlertTriangle size={16} className="mt-0.5 shrink-0" />
                                             <span>{msg.text}</span>
                                         </div>
                                     ) : msg.isError ? (
-                                        <div className="max-w-[75%] px-5 py-3 rounded-2xl rounded-bl-md bg-red-500/10 border border-red-500/30 text-red-400 text-sm shadow-[0_0_10px_rgba(239,68,68,0.1)]">
+                                        <div className="max-w-[75%] px-5 py-3 rounded-2xl rounded-bl-md bg-red-500/10 border border-red-500/30 text-alert-red text-sm shadow-sm font-medium">
                                             {msg.text}
                                         </div>
                                     ) : msg.analysis ? (
@@ -420,7 +423,7 @@ export default function AIAssistantPage() {
                                             <ThreatCard analysis={msg.analysis} />
                                         </div>
                                     ) : (
-                                        <div className="max-w-[75%] px-5 py-3 rounded-2xl rounded-bl-md bg-white/10 border border-white/20 text-white text-sm leading-relaxed shadow-[0_4px_6px_rgba(0,0,0,0.2)]">
+                                        <div className="max-w-[75%] px-5 py-3 rounded-2xl rounded-bl-md bg-foreground/5 border border-border/10 text-foreground text-sm leading-relaxed shadow-sm">
                                             {msg.text}
                                         </div>
                                     )}
@@ -443,7 +446,7 @@ export default function AIAssistantPage() {
                     </div>
 
                     {/* Input area */}
-                    <div className="px-6 py-4 border-t border-white/8 bg-white/[0.02]">
+                    <div className="px-6 py-4 border-t border-border/10 bg-foreground/[0.02]">
                         <div className="relative flex items-center gap-2">
                             <input
                                 type="text"
@@ -452,7 +455,7 @@ export default function AIAssistantPage() {
                                 onKeyDown={(e) => e.key === "Enter" && handleSend()}
                                 disabled={isLoading}
                                 placeholder={hasMessages ? "Ask a follow-up…" : "Describe your cybersecurity concern…"}
-                                className="flex-1 bg-white/5 border border-white/10 rounded-2xl py-4 pl-6 pr-4 focus:outline-none focus:border-neon-purple/50 focus:ring-2 focus:ring-neon-purple/10 transition-all text-sm text-white placeholder:text-text-secondary disabled:opacity-50"
+                                className="flex-1 bg-foreground/5 border border-border rounded-2xl py-4 pl-6 pr-4 focus:outline-none focus:border-cyber-blue/50 focus:ring-2 focus:ring-cyber-blue/20 transition-all text-sm text-foreground placeholder-text-muted/50 disabled:opacity-50 font-medium"
                             />
                             {/* Voice button */}
                             <button
@@ -461,8 +464,8 @@ export default function AIAssistantPage() {
                                 className={cn(
                                     "shrink-0 w-11 h-11 rounded-xl flex items-center justify-center transition-all",
                                     isListening
-                                        ? "bg-red-500 text-white shadow-[0_0_16px_rgba(239,68,68,0.5)] animate-pulse"
-                                        : "bg-white/5 border border-white/10 text-zinc-500 hover:text-white hover:border-white/20"
+                                        ? "bg-alert-red text-white shadow-lg shadow-alert-red/20 animate-pulse"
+                                        : "bg-foreground/5 border border-border text-text-muted hover:text-foreground hover:bg-foreground/10"
                                 )}
                             >
                                 {isListening ? <MicOff size={16} /> : <Mic size={16} />}
@@ -471,14 +474,14 @@ export default function AIAssistantPage() {
                             <button
                                 onClick={handleSend}
                                 disabled={isLoading || !input.trim()}
-                                className="shrink-0 h-11 px-5 bg-neon-purple text-white rounded-xl shadow-[0_0_20px_rgba(122,92,255,0.4)] font-bold text-xs hover:bg-purple-500 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
+                                className="shrink-0 h-11 px-5 bg-cyber-blue text-white rounded-xl shadow-lg shadow-cyber-blue/20 font-black text-[11px] uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
                             >
                                 <Send size={14} /> Send
                             </button>
                         </div>
                         {isListening && (
-                            <p className="text-[11px] text-red-400 mt-2 flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 bg-red-400 rounded-full animate-ping inline-block" />
+                            <p className="text-[11px] text-alert-red mt-2 flex items-center gap-1.5 font-bold uppercase tracking-wider">
+                                <span className="w-1.5 h-1.5 bg-alert-red rounded-full animate-ping inline-block" />
                                 Listening… speak your query
                             </p>
                         )}

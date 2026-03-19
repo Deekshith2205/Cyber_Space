@@ -8,9 +8,9 @@ export default function Navbar() {
   const { user, logout, isAuthenticated } = useAuth();
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-panel/80 backdrop-blur-md h-16 shadow-inset-deep flex items-center justify-between px-6 shadow-2xl">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-panel/80 backdrop-blur-md h-16 flex items-center justify-between px-6 shadow-premium">
       <div className="flex items-center gap-2">
-        <div className="w-12 h-12 rounded-xl overflow-hidden shadow-[0_0_15px_rgba(0,229,255,0.15)] border-none">
+        <div className="w-12 h-12 rounded-xl overflow-hidden shadow-premium border border-border">
           <img src="/cyberspacelogo.jpeg" alt="Cyberspace Logo" className="w-full h-full object-cover" />
         </div>
         <div>
@@ -29,17 +29,17 @@ export default function Navbar() {
           <input
             type="text"
             placeholder="Search CVEs, threats, resources..."
-            className="w-full bg-panel-secondary border-none rounded-xl py-2 pl-10 pr-10 focus:outline-none focus:ring-2 focus:ring-cyber-blue/10 transition-all text-sm text-foreground placeholder:text-text-muted shadow-inset-deep"
+            className="w-full bg-panel-secondary border border-border rounded-xl py-2 pl-10 pr-10 focus:outline-none focus:ring-2 focus:ring-cyber-blue/10 transition-all text-sm text-foreground placeholder:text-text-muted"
           />
-          <button className="absolute right-3 text-slate-400 hover:text-cyber-blue transition-colors">
+          <button className="absolute right-3 text-text-muted hover:text-cyber-blue transition-colors">
             <Mic size={18} />
           </button>
         </div>
       </div>
 
       <div className="flex items-center gap-4">
-        <button className="relative p-2 text-slate-400 hover:text-foreground transition-colors group">
-          <Bell size={20} className="group-hover:drop-shadow-[0_0_8px_rgba(0,229,255,0.4)]" />
+        <button className="relative p-2 text-text-muted hover:text-foreground transition-colors group">
+          <Bell size={20} className="group-hover:drop-shadow-[0_0_8px_var(--cyber-blue)]" />
           <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-red-500 text-[10px] text-white flex items-center justify-center rounded-full border-none shadow-depth">
             9
           </span>
@@ -52,17 +52,17 @@ export default function Navbar() {
               <p className="text-[10px] text-cyber-blue font-bold uppercase tracking-wider">{user.designation || 'USER'}</p>
             </div>
             <div className="group relative">
-              <div className="w-10 h-10 rounded-full border-none p-0.5 shadow-depth overflow-hidden cursor-pointer hover:scale-110 transition-all">
+              <div className="w-10 h-10 rounded-full border border-border p-0.5 shadow-sm overflow-hidden cursor-pointer hover:scale-110 transition-all">
                 <img 
                   src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=0EA5E9&color=FFFFFF`} 
                   alt="Profile" 
-                  className="w-full h-full rounded-full object-cover shadow-[0_0_15px_rgba(0,229,255,0.3)]" 
+                  className="w-full h-full rounded-full object-cover shadow-sm" 
                 />
               </div>
-              <div className="absolute top-12 right-0 bg-[#0B0F14]/95 backdrop-blur-md rounded-xl p-2 w-32 shadow-depth border-none opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all">
+              <div className="absolute top-12 right-0 bg-panel backdrop-blur-md rounded-xl p-2 w-32 shadow-premium border border-border opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all">
                 <button 
                   onClick={logout}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-400 hover:bg-red-500/10 rounded-lg transition-colors font-bold"
                 >
                   <LogOut size={14} />
                   LOGOUT

@@ -38,13 +38,13 @@ export default function StatCard({ label, value, icon: Icon, trend, trendUp, col
             )}
         >
             <div className={cn(
-                "absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity",
+                "absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-10 dark:group-hover:opacity-100 transition-opacity",
                 colorMap[color]
             )} />
 
             <div className="relative z-10 flex items-start justify-between mb-4">
                 <div className={cn(
-                    "p-3 rounded-2xl bg-white/5 transition-all shadow-depth group-hover:scale-110",
+                    "p-3 rounded-2xl bg-foreground/5 transition-all shadow-sm group-hover:scale-110",
                     color === 'blue' && "group-hover:text-cyber-blue",
                     color === 'purple' && "group-hover:text-neon-purple",
                     color === 'red' && "group-hover:text-alert-red",
@@ -53,7 +53,7 @@ export default function StatCard({ label, value, icon: Icon, trend, trendUp, col
                     <Icon size={24} />
                 </div>
                 <div className={cn(
-                    "flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full bg-white/5 shadow-depth",
+                    "flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full bg-foreground/5 shadow-sm",
                     trendUp ? "text-success-green" : "text-alert-red"
                 )}>
                     {trendUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
@@ -63,21 +63,21 @@ export default function StatCard({ label, value, icon: Icon, trend, trendUp, col
 
             <div className="relative z-10">
                 <h3 className="text-text-secondary text-xs font-bold uppercase tracking-widest mb-1">{label}</h3>
-                <p className="text-4xl font-black text-white tracking-tight text-glow-metric">{value}</p>
+                <p className="text-4xl font-black text-foreground tracking-tight text-glow-metric">{value}</p>
             </div>
 
             {/* Modern cyber line effect */}
-            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white/5 overflow-hidden">
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-foreground/5 overflow-hidden">
                 <motion.div
                     initial={{ x: "-100%" }}
                     animate={{ x: "100%" }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
                     className={cn(
                         "w-1/3 h-full",
-                        color === 'blue' && "bg-cyber-blue shadow-[0_0_10px_#00E5FF]",
-                        color === 'purple' && "bg-neon-purple shadow-[0_0_10px_#7A5CFF]",
-                        color === 'red' && "bg-alert-red shadow-[0_0_10px_#FF4C4C]",
-                        color === 'green' && "bg-success-green shadow-[0_0_10px_#00FF9C]",
+                        color === 'blue' && "bg-cyber-blue shadow-[0_0_15px_var(--cyber-blue)]",
+                        color === 'purple' && "bg-neon-purple shadow-[0_0_15px_#7A5CFF]",
+                        color === 'red' && "bg-alert-red shadow-[0_0_15px_#FF4C4C]",
+                        color === 'green' && "bg-success-green shadow-[0_0_15px_#00FF9C]",
                     )}
                 />
             </div>

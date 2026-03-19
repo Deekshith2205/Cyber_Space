@@ -12,13 +12,14 @@ export default function AppearanceSettings({ data, onChange }: AppearanceSetting
 
     const handleThemeChange = (isDark: boolean) => {
         onChange("systemTheme", isDark);
+        const theme = isDark ? "dark" : "light";
+        document.documentElement.setAttribute("data-theme", theme);
         if (isDark) {
             document.documentElement.classList.add("dark");
-            localStorage.setItem("theme", "dark");
         } else {
             document.documentElement.classList.remove("dark");
-            localStorage.setItem("theme", "light");
         }
+        localStorage.setItem("theme", theme);
     };
 
     return (
@@ -64,7 +65,7 @@ export default function AppearanceSettings({ data, onChange }: AppearanceSetting
                                     : "border-border bg-panel-secondary hover:border-slate-300"
                             )}
                         >
-                            <div className="w-full h-24 bg-[#0B0F14] rounded-xl mb-4 border border-white/10 flex flex-col p-3 gap-2 shadow-inner">
+                            <div className="w-full h-24 bg-[#05070A] rounded-xl mb-4 border border-white/10 flex flex-col p-3 gap-2 shadow-inner">
                                 <div className="w-1/2 h-2 bg-white/10 rounded-full" />
                                 <div className="w-full h-10 bg-white/5 rounded-lg border border-white/5" />
                                 <div className="w-2/3 h-2 bg-cyber-blue/20 rounded-full" />
@@ -84,14 +85,14 @@ export default function AppearanceSettings({ data, onChange }: AppearanceSetting
                                     : "border-border bg-panel-secondary hover:border-slate-300"
                             )}
                         >
-                            <div className="w-full h-24 bg-[#F5F7FA] rounded-xl mb-4 border border-slate-200 flex flex-col p-3 gap-2 shadow-inner">
-                                <div className="w-1/2 h-2 bg-slate-300 rounded-full" />
-                                <div className="w-full h-10 bg-white rounded-lg border border-slate-200" />
-                                <div className="w-2/3 h-2 bg-cyber-blue/20 rounded-full" />
+                            <div className="w-full h-24 bg-gradient-to-br from-[#f0f6ff] to-[#f9fbff] rounded-xl mb-4 border border-slate-200 flex flex-col p-3 gap-2 shadow-inner">
+                                <div className="w-1/2 h-2 bg-slate-200 rounded-full" />
+                                <div className="w-full h-10 bg-white/60 backdrop-blur-sm rounded-lg border border-slate-200 shadow-sm" />
+                                <div className="w-2/3 h-2 bg-blue-400/20 rounded-full" />
                             </div>
                             <div className="flex items-center justify-between">
-                                <span className="text-xs font-bold text-foreground">Light Terminal</span>
-                                {!data.systemTheme && <div className="w-2 h-2 rounded-full bg-cyber-blue shadow-[0_0_8px_#0EA5E9]" />}
+                                <span className="text-xs font-bold text-foreground">Premium Light</span>
+                                {!data.systemTheme && <div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_#3BA4FF]" />}
                             </div>
                         </div>
                     </div>

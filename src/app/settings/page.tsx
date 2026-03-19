@@ -205,7 +205,7 @@ export default function SettingsPage() {
                 <h2 className="text-3xl font-semibold text-foreground tracking-tight">
                     {TABS.find(t => t.id === activeTab)?.label || "System Settings"}
                 </h2>
-                <p className="text-zinc-500 text-sm">Configure your analyst terminal and security preferences.</p>
+                <p className="text-text-secondary text-sm">Configure your analyst terminal and security preferences.</p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -218,12 +218,12 @@ export default function SettingsPage() {
                             className={cn(
                                 "w-full flex items-center justify-between p-4 rounded-xl text-xs font-bold transition-all relative overflow-hidden group",
                                 activeTab === tab.id
-                                    ? "bg-[#E0F2FE] dark:bg-cyber-blue/10 text-[#0369A1] dark:text-cyber-blue border border-cyber-blue/20 shadow-sm"
-                                    : "text-slate-500 dark:text-zinc-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 border border-transparent"
+                                    ? "bg-cyber-blue/10 text-cyber-blue border border-cyber-blue/20 shadow-sm"
+                                    : "text-text-secondary hover:text-foreground hover:bg-foreground/5 border border-transparent"
                             )}
                         >
                             <div className="flex items-center gap-3 relative z-10">
-                                <tab.icon size={16} className={activeTab === tab.id ? "text-cyber-blue" : "text-slate-400"} />
+                                <tab.icon size={16} className={activeTab === tab.id ? "text-cyber-blue" : "text-text-muted"} />
                                 {tab.label}
                             </div>
                             {activeTab === tab.id && <ChevronRight size={14} className="relative z-10" />}

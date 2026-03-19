@@ -22,9 +22,9 @@ export default function DashboardPage() {
         <div className="space-y-6 pt-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-2xl font-black text-white tracking-tight flex items-center gap-3 text-glow-primary">
+                    <h2 className="text-2xl font-black text-foreground tracking-tight flex items-center gap-3 text-glow-primary">
                         Security Overview
-                        <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-success-green/10 text-[10px] text-success-green font-bold uppercase tracking-widest shadow-depth border-none">
+                        <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-success-green/10 text-[10px] text-success-green font-bold uppercase tracking-widest shadow-premium border border-success-green/20">
                             System Secure
                         </span>
                     </h2>
@@ -32,8 +32,8 @@ export default function DashboardPage() {
                         Welcome back, {user?.name || 'Agent'}. Your security posture is currently optimal.
                     </p>
                 </div>
-                <div className="flex items-center gap-2 text-xs font-bold text-text-secondary uppercase tracking-widest bg-white/5 px-4 py-2 rounded-2xl shadow-depth border-none">
-                    <History size={14} className="text-cyber-blue drop-shadow-[0_0_5px_rgba(0,229,255,0.4)]" />
+                <div className="flex items-center gap-2 text-xs font-bold text-text-secondary uppercase tracking-widest bg-foreground/5 px-4 py-2 rounded-2xl shadow-premium border border-border">
+                    <History size={14} className="text-cyber-blue drop-shadow-[0_0_5px_rgba(0,180,255,0.2)]" />
                     Last Scan: 2 mins ago
                 </div>
             </div>

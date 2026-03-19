@@ -7,5 +7,6 @@ const router = express.Router();
 router.post('/register', AuthController.registerUser);
 router.post('/login', AuthController.loginUser);
 router.get('/me', authMiddleware, AuthController.getMe);
+router.get('/verify/:token', AuthController.verifyEmail);
 
 export default router;

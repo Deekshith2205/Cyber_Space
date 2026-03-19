@@ -116,38 +116,41 @@ export default function PhishingChecker() {
     const isInvalidState = result?.status.includes("INVALID");
 
     return (
-        <div className="space-y-8 pt-6">
+        <div className="space-y-12 pt-20 pb-24 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col gap-2">
-                <h2 className="text-2xl font-black text-white tracking-tight">Advanced Phishing Link Checker</h2>
-                <p className="text-zinc-500 text-sm">Real-time threat intelligence and multi-vector AI risk scoring.</p>
+                <h2 className="text-2xl font-black text-foreground tracking-tight flex items-center gap-2">
+                    <Link2 className="text-cyber-blue" />
+                    Advanced Phishing Link Checker
+                </h2>
+                <p className="text-text-secondary text-sm font-medium">Real-time threat intelligence and multi-vector AI risk scoring.</p>
             </div>
 
-            <div className="glass p-8 rounded-3xl border border-white/10 relative overflow-hidden">
+            <div className="glass p-8 rounded-3xl border border-border relative overflow-hidden shadow-premium">
                 <div className="relative z-10 max-w-2xl mx-auto text-center space-y-6">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-[10px] text-cyan-500 font-bold uppercase tracking-widest shadow-[0_0_15px_rgba(6,182,212,0.15)]">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyber-blue/10 border border-cyber-blue/20 text-[10px] text-cyber-blue font-black uppercase tracking-widest shadow-sm">
                         <Activity size={12} /> Deep Packet Inspection
                     </div>
-                    <h3 className="text-xl font-bold text-white">Target URL for Analysis</h3>
+                    <h3 className="text-xl font-black text-foreground transition-colors">Target URL for Analysis</h3>
 
-                    <div className="flex gap-3">
+                    <div className="flex flex-col sm:flex-row gap-3">
                         <div className="relative flex-1 group">
-                            <Link2 className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-cyan-500 transition-colors" size={20} />
+                            <Link2 className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-cyber-blue transition-colors" size={20} />
                             <input
                                 type="text"
                                 value={url}
                                 onChange={(e) => setUrl(e.target.value)}
                                 placeholder="https://suspicious-website.com/login"
-                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition-all text-sm font-mono"
+                                className="w-full bg-foreground/5 border border-border rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:border-cyber-blue focus:ring-2 focus:ring-cyber-blue/20 transition-all text-sm font-mono text-foreground placeholder-text-muted/50"
                             />
                         </div>
                         <button
                             onClick={checkLink}
                             disabled={isChecking || !url}
                             className={cn(
-                                "px-8 rounded-2xl font-bold text-sm transition-all flex items-center gap-2 border border-transparent whitespace-nowrap",
+                                "px-8 py-4 sm:py-0 rounded-2xl font-black text-sm transition-all flex items-center justify-center gap-2 border border-transparent whitespace-nowrap",
                                 isChecking
-                                    ? "bg-white/5 text-zinc-500 cursor-not-allowed"
-                                    : "bg-cyan-500/20 text-cyan-400 border-cyan-500/50 hover:bg-cyan-500 hover:text-white hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(6,182,212,0.2)] hover:shadow-[0_0_20px_rgba(6,182,212,0.6)]"
+                                    ? "bg-foreground/5 text-text-muted cursor-not-allowed"
+                                    : "bg-cyber-blue/20 text-cyber-blue border-cyber-blue/50 hover:bg-cyber-blue hover:text-white hover:scale-105 active:scale-95 shadow-lg shadow-cyber-blue/10 hover:shadow-cyber-blue/30"
                             )}
                         >
                             {isChecking ? "Scanning..." : "Initiate Scan"}
@@ -157,7 +160,7 @@ export default function PhishingChecker() {
                         <motion.p 
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="text-alert-red text-xs font-bold mt-2 bg-alert-red/10 border border-alert-red/20 py-2 rounded-lg"
+                            className="text-alert-red text-xs font-black mt-2 bg-alert-red/5 border border-alert-red/20 py-3 rounded-xl"
                         >
                             {error}
                         </motion.p>
@@ -172,8 +175,8 @@ export default function PhishingChecker() {
                             exit={{ opacity: 0 }}
                             className="mt-12 flex flex-col items-center gap-4 py-8"
                         >
-                            <div className="w-16 h-16 border-4 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin shadow-[0_0_30px_rgba(6,182,212,0.3)]" />
-                            <p className="text-xs font-bold text-cyan-500 uppercase tracking-widest animate-pulse">Running heuristic algorithms...</p>
+                            <div className="w-16 h-16 border-4 border-cyber-blue/20 border-t-cyber-blue rounded-full animate-spin shadow-lg shadow-cyber-blue/20" />
+                            <p className="text-xs font-black text-cyber-blue uppercase tracking-[0.2em] animate-pulse">Running heuristic algorithms...</p>
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -185,34 +188,34 @@ export default function PhishingChecker() {
                         initial={{ opacity: 0, y: 40, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                        className="space-y-6"
+                        className="space-y-8"
                     >
                         {/* Title and Top Level Info */}
                         <div className="flex items-center justify-between">
-                             <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                                <Activity className="text-cyan-500" />
+                             <h2 className="text-xl font-black text-foreground flex items-center gap-2 tracking-tight">
+                                <Activity className="text-cyber-blue" />
                                 Threat Intelligence Report
                              </h2>
-                             <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold font-mono">
+                             <span className="text-[10px] text-text-muted uppercase tracking-[0.2em] font-black font-mono">
                                  {new Date().toLocaleString()}
                              </span>
                         </div>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                             
                             {/* Main Risk Gauge Card (Left) */}
-                            <div className="glass p-8 rounded-3xl border border-white/10 flex flex-col items-center relative overflow-hidden group">
-                                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/50 z-0 pointer-events-none" />
+                            <div className="glass p-8 rounded-3xl border border-border flex flex-col items-center relative overflow-hidden group shadow-premium">
+                                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/5 dark:to-black/50 z-0 pointer-events-none" />
                                 <div className="relative z-10 w-full flex-1 flex flex-col items-center justify-center">
-                                    <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-6 w-full text-left">Overall Risk Score</h3>
+                                    <h3 className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] mb-8 w-full text-left">Overall Risk Score</h3>
                                     
                                     <div className="relative w-48 h-48 flex items-center justify-center">
                                         <svg className="w-full h-full transform -rotate-90 drop-shadow-2xl">
                                             {/* Background Track */}
-                                            <circle cx="96" cy="96" r="80" stroke="currentColor" strokeWidth="12" fill="transparent" className="text-white/5" />
+                                            <circle cx="96" cy="96" r="80" stroke="currentColor" strokeWidth="14" fill="transparent" className="text-foreground/5" />
                                             {/* Animated Progress */}
                                             <motion.circle
-                                                cx="96" cy="96" r="80" stroke={getRiskColor(result.risk_score, result.status)} strokeWidth="12" fill="transparent"
+                                                cx="96" cy="96" r="80" stroke={getRiskColor(result.risk_score, result.status)} strokeWidth="14" fill="transparent"
                                                 strokeDasharray={502}
                                                 strokeLinecap="round"
                                                 initial={{ strokeDashoffset: 502 }}
@@ -222,7 +225,7 @@ export default function PhishingChecker() {
                                         </svg>
                                         <div className="absolute inset-0 flex flex-col items-center justify-center">
                                             <motion.span 
-                                                className="text-5xl font-black"
+                                                className="text-6xl font-black text-glow-metric"
                                                 style={{ color: getRiskColor(result.risk_score, result.status) }}
                                                 initial={{ scale: 0 }}
                                                 animate={{ scale: 1 }}
@@ -230,25 +233,25 @@ export default function PhishingChecker() {
                                             >
                                                 {isInvalidState ? "N/A" : result.risk_score}
                                             </motion.span>
-                                            {!isInvalidState && <span className="text-[10px] font-bold text-zinc-500 uppercase mt-1">out of 100</span>}
+                                            {!isInvalidState && <span className="text-[10px] font-black text-text-muted uppercase tracking-widest mt-2">out of 100</span>}
                                         </div>
                                     </div>
 
-                                    <div className="mt-8 text-center bg-black/40 px-6 py-3 rounded-2xl border border-white/5 backdrop-blur-md">
-                                        <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Status</p>
-                                        <div className="flex items-center justify-center gap-2">
+                                    <div className="mt-10 text-center bg-panel-secondary/60 px-8 py-4 rounded-2xl border border-border backdrop-blur-xl shadow-premium">
+                                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-1.5">Threat Status</p>
+                                        <div className="flex items-center justify-center gap-3">
                                             {result.status.includes("INVALID") ? (
-                                                <HelpCircle size={18} className="text-zinc-500" />
+                                                <HelpCircle size={20} className="text-text-muted" />
                                             ) : result.status === "Safe" ? (
-                                                <ShieldCheck size={18} className="text-success-green" />
+                                                <ShieldCheck size={20} className="text-success-green" />
                                             ) : result.status === "Suspicious" ? (
-                                                <AlertTriangle size={18} className="text-yellow-500" />
+                                                <AlertTriangle size={20} className="text-yellow-500" />
                                             ) : result.status === "High Risk" ? (
-                                                <AlertTriangle size={18} className="text-orange-500" />
+                                                <AlertTriangle size={20} className="text-orange-500" />
                                             ) : (
-                                                <ShieldAlert size={18} className="text-alert-red" />
+                                                <ShieldAlert size={20} className="text-alert-red" />
                                             )}
-                                            <span className="font-black tracking-widest text-lg" style={{ color: getRiskColor(result.risk_score, result.status) }}>
+                                            <span className="font-black tracking-[0.1em] text-xl" style={{ color: getRiskColor(result.risk_score, result.status) }}>
                                                 {isInvalidState ? "UNKNOWN" : result.status.toUpperCase()}
                                             </span>
                                         </div>
@@ -257,30 +260,30 @@ export default function PhishingChecker() {
                             </div>
 
                             {/* Charts & Details Data (Middle & Right) */}
-                            <div className="lg:col-span-2 space-y-6">
+                            <div className="lg:col-span-2 space-y-8">
                                 
                                 {/* Target info row */}
-                                <div className="glass p-6 rounded-3xl border border-white/10 relative overflow-hidden">
-                                    <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Analyzed Target</p>
-                                    <p className="text-sm font-medium text-white break-all font-mono">{result.url}</p>
+                                <div className="glass p-8 rounded-3xl border border-border relative overflow-hidden shadow-premium">
+                                    <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] mb-3">Analyzed Asset</p>
+                                    <p className="text-sm font-bold text-foreground break-all font-mono bg-foreground/5 p-3 rounded-xl border border-border/10 tracking-tight">{result.url}</p>
                                     
                                     {/* Penalty Reasons Container */}
                                     {result.reason && (
-                                        <div className="mt-4 pt-4 border-t border-white/10">
-                                            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3">Intelligence Reasons</p>
+                                        <div className="mt-6 pt-6 border-t border-border">
+                                            <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] mb-4">Intelligence Findings</p>
                                             
                                             {Array.isArray(result.reason) ? (
-                                                <ul className="space-y-2">
+                                                <ul className="space-y-3">
                                                     {result.reason.map((r, i) => (
-                                                        <li key={i} className="flex items-start gap-2 text-xs font-bold text-orange-400">
-                                                            <FileWarning size={14} className="shrink-0 mt-0.5" />
+                                                        <li key={i} className="flex items-start gap-3 text-xs font-black text-orange-500/90 leading-relaxed">
+                                                            <FileWarning size={16} className="shrink-0 mt-0.5 text-orange-500" />
                                                             {r}
                                                         </li>
                                                     ))}
                                                 </ul>
                                             ) : (
-                                                <div className="flex items-center gap-2 text-xs font-bold text-zinc-400">
-                                                    <Info size={14} className="text-zinc-500" />
+                                                <div className="flex items-center gap-3 text-xs font-black text-text-muted">
+                                                    <Info size={16} className="text-cyber-blue" />
                                                     {result.reason}
                                                 </div>
                                             )}
@@ -290,21 +293,22 @@ export default function PhishingChecker() {
 
                                 {/* Charts Grid (Only render if NOT invalid) */}
                                 {!isInvalidState && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         
                                         {/* Bar Chart: Threat Vectors */}
-                                        <div className="glass p-5 rounded-3xl border border-white/10 h-64 flex flex-col">
-                                            <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-4">Risk Penalties</h3>
+                                        <div className="glass p-6 rounded-3xl border border-border h-72 flex flex-col shadow-premium">
+                                            <h3 className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] mb-6">Risk Attribution</h3>
                                             <div className="flex-1 w-full relative">
                                                 <ResponsiveContainer width="100%" height="100%">
                                                     <BarChart data={getBarData()} margin={{ top: 0, right: 0, left: -25, bottom: 0 }}>
-                                                        <XAxis dataKey="name" tick={{ fill: '#71717a', fontSize: 10 }} axisLine={false} tickLine={false} />
-                                                        <YAxis tick={{ fill: '#71717a', fontSize: 10 }} axisLine={false} tickLine={false} />
+                                                        <XAxis dataKey="name" tick={{ fill: 'var(--text-secondary)', fontSize: 10, fontWeight: 900 }} axisLine={false} tickLine={false} />
+                                                        <YAxis tick={{ fill: 'var(--text-secondary)', fontSize: 10, fontWeight: 900 }} axisLine={false} tickLine={false} />
                                                         <Tooltip 
-                                                            cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                                                            contentStyle={{ backgroundColor: '#000', borderColor: '#333', borderRadius: '12px', fontSize: '12px' }}
+                                                            cursor={{ fill: 'var(--foreground)', opacity: 0.05 }}
+                                                            contentStyle={{ backgroundColor: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '16px', fontSize: '12px', fontWeight: 900, color: 'var(--foreground)', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}
+                                                            itemStyle={{ color: 'var(--foreground)' }}
                                                         />
-                                                        <Bar dataKey="penalty" radius={[4, 4, 0, 0]}>
+                                                        <Bar dataKey="penalty" radius={[6, 6, 0, 0]} barSize={30}>
                                                             {getBarData().map((entry, index) => (
                                                                 <Cell key={`cell-${index}`} fill={entry.penalty > 0 ? '#ef4444' : '#22c55e'} />
                                                             ))}
@@ -315,8 +319,8 @@ export default function PhishingChecker() {
                                         </div>
 
                                         {/* Security Breakdown Pie */}
-                                        <div className="glass p-5 rounded-3xl border border-white/10 h-64 flex flex-col relative">
-                                            <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-0 absolute top-5 left-5 z-10">Vector Integrity</h3>
+                                        <div className="glass p-6 rounded-3xl border border-border h-72 flex flex-col relative shadow-premium">
+                                            <h3 className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] mb-0 absolute top-7 left-7 z-10">Integrity Matrix</h3>
                                             <div className="flex-1 w-full">
                                                 <ResponsiveContainer width="100%" height="100%">
                                                     <PieChart>
@@ -324,17 +328,19 @@ export default function PhishingChecker() {
                                                             data={getPieData()}
                                                             cx="50%"
                                                             cy="50%"
-                                                            innerRadius={50}
-                                                            outerRadius={80}
-                                                            paddingAngle={5}
+                                                            innerRadius={55}
+                                                            outerRadius={85}
+                                                            paddingAngle={8}
                                                             dataKey="value"
+                                                            stroke="none"
                                                         >
                                                             {getPieData().map((entry, index) => (
                                                                 <Cell key={`cell-${index}`} fill={entry.color} />
                                                             ))}
                                                         </Pie>
                                                         <Tooltip 
-                                                            contentStyle={{ backgroundColor: '#000', borderColor: '#333', borderRadius: '12px', fontSize: '12px' }}
+                                                            contentStyle={{ backgroundColor: 'var(--panel)', border: '1px solid var(--border)', borderRadius: '16px', fontSize: '12px', fontWeight: 900, color: 'var(--foreground)', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}
+                                                            itemStyle={{ color: 'var(--foreground)' }}
                                                         />
                                                     </PieChart>
                                                 </ResponsiveContainer>
@@ -348,44 +354,44 @@ export default function PhishingChecker() {
 
                         {/* Security Indicators Table Bottom Area (Hide if Invalid) */}
                         {!isInvalidState && result.checks && Object.keys(result.checks).length > 0 && (
-                            <div className="glass p-6 rounded-3xl border border-white/10">
-                                <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-6">Security Indicator Breakdown</h3>
+                            <div className="glass p-8 rounded-3xl border border-border shadow-premium">
+                                <h3 className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] mb-8">Security Vector Breakdown</h3>
                                 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                                     
-                                    <div className={cn("p-4 rounded-2xl border flex items-center justify-between transition-colors", result.checks.dns_resolved ? "bg-success-green/5 border-success-green/20" : "bg-alert-red/5 border-alert-red/20")}>
+                                    <div className={cn("p-6 rounded-2xl border flex items-center justify-between transition-all shadow-premium group", result.checks.dns_resolved ? "bg-success-green/5 border-success-green/20" : "bg-alert-red/5 border-alert-red/20")}>
                                         <div>
-                                            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Network</p>
-                                            <p className="text-sm font-bold text-white mt-1">DNS Resolution</p>
+                                            <p className="text-[10px] font-black text-text-secondary uppercase tracking-widest">Network</p>
+                                            <p className="text-sm font-black text-foreground mt-1.5 tracking-tight">DNS Resolution</p>
                                         </div>
-                                        {result.checks.dns_resolved ? <Activity className="text-success-green" /> : <AlertTriangle className="text-alert-red" />}
+                                        {result.checks.dns_resolved ? <Activity className="text-success-green group-hover:scale-110 transition-transform" /> : <AlertTriangle className="text-alert-red group-hover:scale-110 transition-transform" />}
                                     </div>
 
-                                    <div className={cn("p-4 rounded-2xl border flex items-center justify-between transition-colors", result.checks.https_secure ? "bg-success-green/5 border-success-green/20" : "bg-orange-500/5 border-orange-500/20")}>
+                                    <div className={cn("p-6 rounded-2xl border flex items-center justify-between transition-all shadow-premium group", result.checks.https_secure ? "bg-success-green/5 border-success-green/20" : "bg-orange-500/5 border-orange-500/20")}>
                                         <div>
-                                            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Transport Security</p>
-                                            <p className="text-sm font-bold text-white mt-1">SSL Certificate</p>
+                                            <p className="text-[10px] font-black text-text-secondary uppercase tracking-widest">Encryption</p>
+                                            <p className="text-sm font-black text-foreground mt-1.5 tracking-tight">SSL Certificate</p>
                                         </div>
-                                        {result.checks.https_secure ? <Key size={20} className="text-success-green" /> : <AlertTriangle size={20} className="text-orange-500" />}
+                                        {result.checks.https_secure ? <Key size={20} className="text-success-green group-hover:scale-110 transition-transform" /> : <AlertTriangle size={20} className="text-orange-500 group-hover:scale-110 transition-transform" />}
                                     </div>
 
-                                    <div className={cn("p-4 rounded-2xl border flex items-center justify-between transition-colors", (result.checks.domain_age_days !== undefined && result.checks.domain_age_days >= 30) || result.checks.domain_age_days === -1 ? "bg-success-green/5 border-success-green/20" : "bg-orange-500/5 border-orange-500/20")}>
+                                    <div className={cn("p-6 rounded-2xl border flex items-center justify-between transition-all shadow-premium group", (result.checks.domain_age_days !== undefined && result.checks.domain_age_days >= 30) || result.checks.domain_age_days === -1 ? "bg-success-green/5 border-success-green/20" : "bg-orange-500/5 border-orange-500/20")}>
                                         <div>
-                                            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Domain Trust</p>
-                                            <p className="text-sm font-bold text-white mt-1">
+                                            <p className="text-[10px] font-black text-text-secondary uppercase tracking-widest">Authority</p>
+                                            <p className="text-sm font-black text-foreground mt-1.5 tracking-tight">
                                                 {result.checks.domain_age_days === -1 ? "IP / Unknown Age" : `Age: ${result.checks.domain_age_days} Days`}
                                             </p>
                                         </div>
-                                        {result.checks.domain_age_days === -1 || (result.checks.domain_age_days !== undefined && result.checks.domain_age_days >= 30) ? <ShieldCheck className="text-success-green" /> : <AlertTriangle className="text-orange-500" />}
+                                        {result.checks.domain_age_days === -1 || (result.checks.domain_age_days !== undefined && result.checks.domain_age_days >= 30) ? <ShieldCheck className="text-success-green group-hover:scale-110 transition-transform" /> : <AlertTriangle className="text-orange-500 group-hover:scale-110 transition-transform" />}
                                     </div>
 
 
-                                    <div className={cn("p-4 rounded-2xl border flex items-center justify-between transition-colors", result.checks.google_safe_browsing ? "bg-success-green/5 border-success-green/20" : "bg-alert-red/5 border-alert-red/20")}>
+                                    <div className={cn("p-6 rounded-2xl border flex items-center justify-between transition-all shadow-premium group", result.checks.google_safe_browsing ? "bg-success-green/5 border-success-green/20" : "bg-alert-red/5 border-alert-red/20")}>
                                         <div>
-                                            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Threat DB</p>
-                                            <p className="text-sm font-bold text-white mt-1">Google API Check</p>
+                                            <p className="text-[10px] font-black text-text-secondary uppercase tracking-widest">Threat Intel</p>
+                                            <p className="text-sm font-black text-foreground mt-1.5 tracking-tight">Google API</p>
                                         </div>
-                                        {result.checks.google_safe_browsing ? <ShieldCheck className="text-success-green" /> : <ShieldAlert className="text-alert-red" />}
+                                        {result.checks.google_safe_browsing ? <ShieldCheck className="text-success-green group-hover:scale-110 transition-transform" /> : <ShieldAlert className="text-alert-red group-hover:scale-110 transition-transform" />}
                                     </div>
 
                                 </div>
@@ -397,4 +403,5 @@ export default function PhishingChecker() {
             </AnimatePresence>
         </div>
     );
+
 }

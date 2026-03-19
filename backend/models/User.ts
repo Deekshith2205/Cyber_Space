@@ -7,6 +7,8 @@ export interface IUser extends Document {
     password: string;
     role: string;
     designation: string;
+    isVerified: boolean;
+    verificationToken?: string;
     createdAt: Date;
     comparePassword(password: string): Promise<boolean>;
 }
@@ -17,6 +19,8 @@ const UserSchema: Schema = new Schema({
     password: { type: String, required: true },
     role: { type: String, default: 'user' },
     designation: { type: String, default: 'user' },
+    isVerified: { type: Boolean, default: false },
+    verificationToken: { type: String },
     createdAt: { type: Date, default: Date.now }
 });
 

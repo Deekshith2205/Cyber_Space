@@ -45,18 +45,21 @@ const resources = [
 
 export default function ResourceDirectory() {
     return (
-        <div className="space-y-8 pt-6">
+        <div className="space-y-8 pt-6 pb-12">
             <div className="flex flex-col gap-2">
-                <h2 className="text-2xl font-black text-white tracking-tight">Cyber Resource Directory</h2>
-                <p className="text-zinc-500 text-sm">Verified sources for reporting, recovery, and cybersecurity education.</p>
+                <h2 className="text-2xl font-black text-foreground tracking-tight flex items-center gap-2">
+                    <BookOpen className="text-cyber-blue" />
+                    Cyber Resource Directory
+                </h2>
+                <p className="text-text-secondary text-sm">Verified sources for reporting, recovery, and cybersecurity education.</p>
             </div>
 
             <div className="relative group max-w-2xl">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-cyber-blue transition-colors" size={20} />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-cyber-blue transition-colors" size={20} />
                 <input
                     type="text"
                     placeholder="Search resources, websites, or categories..."
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:border-cyber-blue focus:ring-1 focus:ring-cyber-blue/30 transition-all text-sm"
+                    className="w-full bg-foreground/5 border border-border rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:border-cyber-blue focus:ring-1 focus:ring-cyber-blue/30 transition-all text-sm text-foreground placeholder:text-text-muted/50 shadow-sm"
                 />
             </div>
 
@@ -72,27 +75,27 @@ export default function ResourceDirectory() {
                                 <motion.div
                                     key={i}
                                     whileHover={{ x: 4 }}
-                                    className="glass p-5 rounded-2xl border border-white/10 group cursor-pointer hover:border-cyber-blue/30 transition-all"
+                                    className="glass p-5 rounded-2xl border border-border group cursor-pointer hover:border-cyber-blue/30 transition-all shadow-premium"
                                 >
                                     <div className="flex items-start justify-between mb-3">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-zinc-400 group-hover:text-cyber-blue transition-colors">
+                                            <div className="w-10 h-10 rounded-xl bg-foreground/5 flex items-center justify-center text-text-muted group-hover:text-cyber-blue transition-colors shadow-sm">
                                                 <Globe size={20} />
                                             </div>
                                             <div>
-                                                <h4 className="text-sm font-bold text-white mb-0.5">{item.name}</h4>
-                                                <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">{item.role}</span>
+                                                <h4 className="text-sm font-bold text-foreground mb-0.5 group-hover:text-cyber-blue transition-colors">{item.name}</h4>
+                                                <span className="text-[10px] text-text-muted font-black uppercase tracking-widest">{item.role}</span>
                                             </div>
                                         </div>
                                         <div className="flex flex-col items-end gap-1">
                                             <div className="flex items-center gap-1 text-[8px] font-black text-success-green bg-success-green/10 px-1.5 py-0.5 rounded border border-success-green/20">
                                                 <CheckCircle2 size={8} /> {item.badge}
                                             </div>
-                                            <span className="text-[8px] text-zinc-600 font-bold uppercase">{item.trust} Trust</span>
+                                            <span className="text-[8px] text-text-muted font-black uppercase">{item.trust} Trust</span>
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center justify-between mt-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 group-hover:text-cyber-blue">
+                                    <div className="flex items-center justify-between mt-4 text-[10px] font-black uppercase tracking-widest text-text-muted group-hover:text-cyber-blue">
                                         Visit Official Site
                                         <ExternalLink size={14} className="group-hover:translate-x-0.5 transition-transform" />
                                     </div>

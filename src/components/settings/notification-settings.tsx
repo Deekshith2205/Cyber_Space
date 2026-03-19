@@ -14,19 +14,19 @@ const Switch = ({ checked, onCheckedChange, label, description }: SwitchProps) =
     <div className="p-5 bg-panel border border-border rounded-2xl flex items-center justify-between group transition-all hover:border-cyber-blue/30 shadow-sm">
         <div className="space-y-1">
             <h4 className="text-sm font-medium text-foreground">{label}</h4>
-            <p className="text-xs text-slate-500">{description}</p>
+            <p className="text-xs text-text-muted transition-colors">{description}</p>
         </div>
         <button
             onClick={() => onCheckedChange(!checked)}
             className={cn(
                 "w-12 h-6 rounded-full p-1 transition-all duration-300 relative border",
                 checked
-                    ? "bg-[#0EA5E9] border-[#0EA5E9] shadow-sm shadow-cyber-blue/20"
-                    : "bg-[#CBD5F5] border-[#CBD5F5]"
+                    ? "bg-cyber-blue border-cyber-blue shadow-md shadow-cyber-blue/20"
+                    : "bg-foreground/10 border-border"
             )}
         >
             <div className={cn(
-                "w-4 h-4 rounded-full transition-all duration-300 transform bg-white shadow-sm",
+                "w-4 h-4 rounded-full transition-all duration-300 transform bg-white shadow-md",
                 checked ? "translate-x-6" : "translate-x-0"
             )} />
         </button>

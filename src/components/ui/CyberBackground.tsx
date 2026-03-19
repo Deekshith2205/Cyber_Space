@@ -62,8 +62,19 @@ export default function CyberBackground() {
         }
 
         const animate = () => {
+            if (!ctx) return;
             ctx.clearRect(0, 0, width, height);
+
+            // Get theme-aware colors from document element
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark' || document.documentElement.classList.contains('dark');
+            const pColor1 = isDark ? "#00E5FF" : "#3BA4FF";
+            const pColor2 = isDark ? "#7A5CFF" : "#0066FF";
+
             particles.forEach((p) => {
+                // Update color less frequently or set it once
+                if (Math.random() > 0.99) {
+                    p.color = Math.random() > 0.5 ? pColor1 : pColor2;
+                }
                 p.update();
                 p.draw();
             });
@@ -84,7 +95,10 @@ export default function CyberBackground() {
     return (
         <canvas
             ref={canvasRef}
-            className="fixed inset-0 z-0 pointer-events-none opacity-40 dark:opacity-40 light:opacity-5 transition-opacity duration-1000"
+            className="fixed inset-0 z-0 pointer-events-none opacity-40 light-dim transition-opacity duration-1000"
         />
     );
 }
+
+// Add CSS to handle light mode opacity if not using tailwind 4 light:
+// [data-theme='light'] .light-dim { opacity: 0.1; }

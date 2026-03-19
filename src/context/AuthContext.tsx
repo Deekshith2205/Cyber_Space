@@ -16,7 +16,7 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<{ isWeakPassword: boolean }>;
   register: (name: string, email: string, password: string) => Promise<void>;
   updateProfile: (name: string, email: string, designation: string) => Promise<void>;
   logout: () => void;
@@ -62,11 +62,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await axios.post('http://localhost:5000/api/auth/login', { email, password });
       if (response.data.status === 'success') {
-        const { token, user } = response.data;
+        const { token, user, isWeakPassword } = response.data;
         setUser(user);
         setToken(token);
         localStorage.setItem('token', token);
+        // Do not redirect here if password is weak, or allow the component to handle it
         router.push('/dashboard');
+        return { isWeakPassword: !!isWeakPassword };
       } else {
         throw new Error(response.data.message || 'Login failed');
       }
