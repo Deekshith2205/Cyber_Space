@@ -124,12 +124,12 @@ function ThreatCard({ analysis }: { analysis: AIAnalysisResult }) {
         >
             {/* Top bar */}
             <div className="flex items-center gap-3 px-5 py-4 border-b border-white/8">
-                <div className="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center text-neon-purple">
+                <div className="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center text-neon-purple shadow-[0_0_10px_rgba(122,92,255,0.1)]">
                     <Icon size={18} />
                 </div>
                 <div className="flex-1 min-w-0">
-                    <p className="text-xs text-zinc-500 uppercase tracking-widest font-bold">Threat Detected</p>
-                    <h3 className="font-bold text-white truncate">{analysis.threat_type}</h3>
+                    <p className="text-xs text-text-secondary uppercase tracking-widest font-bold">Threat Detected</p>
+                    <h3 className="font-bold text-white truncate text-glow-primary">{analysis.threat_type}</h3>
                 </div>
                 <span className={cn("px-3 py-1 rounded-full text-[11px] font-black border uppercase tracking-wider", sev.badge)}>
                     {analysis.severity}
@@ -139,7 +139,7 @@ function ThreatCard({ analysis }: { analysis: AIAnalysisResult }) {
             {/* Severity bar */}
             <div className="px-5 py-2 bg-black/20">
                 <div className="flex items-center gap-3">
-                    <span className="text-[10px] text-zinc-600 uppercase tracking-widest font-bold w-16 shrink-0">Risk Level</span>
+                    <span className="text-[10px] text-text-secondary uppercase tracking-widest font-bold w-16 shrink-0">Risk Level</span>
                     <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
                         <motion.div
                             initial={{ width: 0 }}
@@ -148,13 +148,13 @@ function ThreatCard({ analysis }: { analysis: AIAnalysisResult }) {
                             className={cn("h-full rounded-full", sev.bar)}
                         />
                     </div>
-                    <span className="text-[10px] text-zinc-400 font-medium shrink-0 max-w-[140px] truncate">{analysis.risk_level}</span>
+                    <span className="text-[10px] text-text-secondary font-medium shrink-0 max-w-[140px] truncate">{analysis.risk_level}</span>
                 </div>
             </div>
 
             {/* Description with typewriter */}
             <div className="px-5 py-4 border-b border-white/5">
-                <p className="text-sm text-zinc-300 leading-relaxed">
+                <p className="text-sm text-white leading-relaxed">
                     <TypewriterText text={analysis.description} />
                 </p>
             </div>
@@ -185,7 +185,7 @@ function ThreatCard({ analysis }: { analysis: AIAnalysisResult }) {
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: tab === "solution" ? 8 : -8 }}
                         transition={{ duration: 0.2 }}
-                        className="text-sm text-zinc-400 leading-relaxed whitespace-pre-line"
+                        className="text-sm text-text-secondary leading-relaxed whitespace-pre-line"
                     >
                         {tab === "solution" ? analysis.solution : analysis.prevention}
                     </motion.div>
@@ -336,8 +336,8 @@ export default function AIAssistantPage() {
             {/* Page Header */}
             <div className="flex items-center justify-between">
                 <div className="flex flex-col gap-1">
-                    <h2 className="text-2xl font-black text-white tracking-tight">AI Cyber Assistant</h2>
-                    <p className="text-zinc-500 text-sm">Powered by Google Gemini · Cybersecurity domain only</p>
+                    <h2 className="text-2xl font-black text-white tracking-tight text-glow-primary">AI Cyber Assistant</h2>
+                    <p className="text-text-secondary text-sm">Powered by Google Gemini · Cybersecurity domain only</p>
                 </div>
                 {hasMessages && (
                     <button
@@ -359,8 +359,8 @@ export default function AIAssistantPage() {
                             <Bot size={18} />
                         </div>
                         <div>
-                            <p className="font-bold text-white text-sm">CYBERSPACE Intelligence Engine</p>
-                            <p className="text-[10px] text-zinc-600 uppercase tracking-widest font-bold">Gemini · Context-Aware · Neural Security Model</p>
+                            <p className="font-bold text-white text-sm text-glow-blue">CYBERSPACE Intelligence Engine</p>
+                            <p className="text-[10px] text-text-secondary uppercase tracking-widest font-bold">Gemini · Context-Aware · Neural Security Model</p>
                         </div>
                         <div className="ml-auto px-3 py-1 rounded-full bg-success-green/10 border border-success-green/20 text-[10px] text-success-green font-bold uppercase tracking-widest">
                             Online
@@ -403,16 +403,16 @@ export default function AIAssistantPage() {
                                     className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                                 >
                                     {msg.role === "user" ? (
-                                        <div className="max-w-[75%] px-5 py-3 rounded-2xl rounded-br-md bg-neon-purple/20 border border-neon-purple/30 text-white text-sm leading-relaxed">
+                                        <div className="max-w-[75%] px-5 py-3 rounded-2xl rounded-br-md bg-neon-purple/20 border border-neon-purple/40 text-white text-sm leading-relaxed shadow-[0_0_15px_rgba(122,92,255,0.1)]">
                                             {msg.text}
                                         </div>
                                     ) : msg.isDomainBlocked ? (
-                                        <div className="max-w-[75%] px-5 py-3 rounded-2xl rounded-bl-md bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-sm flex gap-2 items-start">
+                                        <div className="max-w-[75%] px-5 py-3 rounded-2xl rounded-bl-md bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-sm flex gap-2 items-start shadow-[0_0_10px_rgba(234,179,8,0.1)]">
                                             <AlertTriangle size={16} className="mt-0.5 shrink-0" />
                                             <span>{msg.text}</span>
                                         </div>
                                     ) : msg.isError ? (
-                                        <div className="max-w-[75%] px-5 py-3 rounded-2xl rounded-bl-md bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+                                        <div className="max-w-[75%] px-5 py-3 rounded-2xl rounded-bl-md bg-red-500/10 border border-red-500/30 text-red-400 text-sm shadow-[0_0_10px_rgba(239,68,68,0.1)]">
                                             {msg.text}
                                         </div>
                                     ) : msg.analysis ? (
@@ -420,7 +420,7 @@ export default function AIAssistantPage() {
                                             <ThreatCard analysis={msg.analysis} />
                                         </div>
                                     ) : (
-                                        <div className="max-w-[75%] px-5 py-3 rounded-2xl rounded-bl-md bg-white/5 border border-white/10 text-zinc-300 text-sm">
+                                        <div className="max-w-[75%] px-5 py-3 rounded-2xl rounded-bl-md bg-white/10 border border-white/20 text-white text-sm leading-relaxed shadow-[0_4px_6px_rgba(0,0,0,0.2)]">
                                             {msg.text}
                                         </div>
                                     )}
@@ -452,7 +452,7 @@ export default function AIAssistantPage() {
                                 onKeyDown={(e) => e.key === "Enter" && handleSend()}
                                 disabled={isLoading}
                                 placeholder={hasMessages ? "Ask a follow-up…" : "Describe your cybersecurity concern…"}
-                                className="flex-1 bg-white/5 border border-white/10 rounded-2xl py-4 pl-6 pr-4 focus:outline-none focus:border-neon-purple/50 focus:ring-2 focus:ring-neon-purple/10 transition-all text-sm text-white placeholder:text-zinc-600 disabled:opacity-50"
+                                className="flex-1 bg-white/5 border border-white/10 rounded-2xl py-4 pl-6 pr-4 focus:outline-none focus:border-neon-purple/50 focus:ring-2 focus:ring-neon-purple/10 transition-all text-sm text-white placeholder:text-text-secondary disabled:opacity-50"
                             />
                             {/* Voice button */}
                             <button

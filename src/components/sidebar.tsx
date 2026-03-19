@@ -48,7 +48,7 @@ export default function Sidebar() {
     return (
         <aside
             className={cn(
-                "fixed left-0 top-16 bottom-0 z-40 bg-panel transition-all duration-300 ease-in-out shadow-sm",
+                "fixed left-0 top-16 bottom-0 z-40 bg-panel transition-all duration-300 ease-in-out shadow-depth",
                 collapsed ? "w-20" : "w-64"
             )}
         >
@@ -63,19 +63,22 @@ export default function Sidebar() {
                                 className={cn(
                                     "w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all relative group",
                                     isActive
-                                        ? "bg-[#E0F2FE] text-cyber-blue border-l-4 border-cyber-blue rounded-none rounded-r-xl shadow-sm"
-                                        : "text-[#334155] hover:text-foreground hover:bg-panel-secondary"
+                                        ? "bg-cyber-blue/15 text-cyber-blue shadow-[inset_0_0_20px_rgba(0,229,255,0.15),0_0_15px_rgba(0,229,255,0.1)] border-none"
+                                        : "text-white/75 hover:text-cyber-blue hover:bg-white/5"
                                 )}
                             >
                                 <item.icon size={20} className={cn(
                                     "transition-all",
-                                    isActive ? "" : "group-hover:scale-110"
+                                    isActive ? "filter drop-shadow-[0_0_5px_rgba(0,229,255,0.5)]" : "group-hover:scale-110"
                                 )} />
                                 {!collapsed && (
-                                    <span className="text-sm font-medium whitespace-nowrap">{item.label}</span>
+                                    <span className={cn(
+                                        "text-sm font-medium whitespace-nowrap transition-all",
+                                        isActive ? "text-glow-blue" : "group-hover:text-shadow-[0_0_8px_rgba(0,255,255,0.4)]"
+                                    )}>{item.label}</span>
                                 )}
                                 {collapsed && (
-                                    <div className="absolute left-full ml-4 px-3 py-2 bg-panel border border-border rounded-lg text-xs text-foreground opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap shadow-xl">
+                                    <div className="absolute left-full ml-4 px-3 py-2 bg-panel rounded-lg text-xs text-foreground opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap shadow-depth border-none">
                                         {item.label}
                                     </div>
                                 )}
@@ -86,26 +89,26 @@ export default function Sidebar() {
 
                 <div className="px-3 mt-auto">
                     {!collapsed && (
-                        <div className="p-4 rounded-2xl glass mb-4 border border-border bg-panel-secondary/50">
+                        <div className="p-4 rounded-2xl glass mb-4 shadow-depth border-none bg-panel-secondary/50">
                             <div className="flex items-center justify-between mb-2">
-                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Security Score</span>
-                                <span className="text-xs font-bold text-success-green">92%</span>
+                                <span className="text-[10px] font-bold text-text-secondary uppercase tracking-widest">Security Score</span>
+                                <span className="text-xs font-bold text-success-green text-glow-blue">92%</span>
                             </div>
-                            <div className="h-1.5 w-full bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden">
+                            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden shadow-inset-deep">
                                 <motion.div
                                     initial={{ width: 0 }}
                                     animate={{ width: "92%" }}
-                                    className="h-full bg-success-green shadow-[0_0_10px_#00FF9C]"
+                                    className="h-full bg-success-green shadow-[0_0_15px_#00FF9C]"
                                 />
                             </div>
                         </div>
                     )}
-
+ 
                     <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-red-500 hover:bg-red-500/10 transition-all mb-2"
+                        className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-red-400 hover:text-red-500 hover:bg-red-500/10 transition-all mb-2 group"
                     >
-                        <LogOut size={20} />
+                        <LogOut size={20} className="group-hover:drop-shadow-[0_0_8px_rgba(255,76,76,0.6)]" />
                         {!collapsed && <span className="text-sm font-medium">Clearance Exit (Logout)</span>}
                     </button>
 

@@ -42,8 +42,8 @@ export default function QuickActions() {
             {actions.map((action) => (
                 <motion.div
                     key={action.id}
-                    whileHover={{ y: -4, scale: 1.02 }}
-                    className="glass p-5 rounded-3xl border border-white/10 group cursor-pointer relative overflow-hidden transition-all duration-300"
+                    whileHover={{ y: -6, scale: 1.02 }}
+                    className="glass p-5 rounded-3xl group cursor-pointer relative overflow-hidden transition-all duration-400 shadow-depth border-none"
                 >
                     <div className={cn(
                         "absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-10 opacity-0 transition-opacity",
@@ -55,7 +55,7 @@ export default function QuickActions() {
 
                     <div className="relative z-10 flex flex-col h-full">
                         <div className={cn(
-                            "p-3 rounded-2xl bg-white/5 border border-white/10 w-fit mb-4 group-hover:border-current transition-colors",
+                            "p-3 rounded-2xl bg-white/5 shadow-depth w-fit mb-4 group-hover:scale-110 transition-all",
                             action.color === 'blue' && "group-hover:text-cyber-blue",
                             action.color === 'orange' && "group-hover:text-orange-500",
                             action.color === 'purple' && "group-hover:text-neon-purple",
@@ -64,12 +64,12 @@ export default function QuickActions() {
                             <action.icon size={24} />
                         </div>
 
-                        <h3 className="text-sm font-bold text-white mb-2 group-hover:translate-x-1 transition-transform">{action.title}</h3>
-                        <p className="text-[10px] text-zinc-500 font-medium leading-relaxed mb-4">{action.desc}</p>
+                        <h3 className="text-sm font-bold text-white mb-2 group-hover:translate-x-1 transition-transform text-glow-primary">{action.title}</h3>
+                        <p className="text-[10px] text-text-secondary font-medium leading-relaxed mb-4">{action.desc}</p>
 
-                        <div className="mt-auto flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-400 group-hover:text-white transition-colors">
+                        <div className="mt-auto flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-text-secondary group-hover:text-white transition-colors">
                             Initialize
-                            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform text-cyber-blue" />
                         </div>
                     </div>
                 </motion.div>

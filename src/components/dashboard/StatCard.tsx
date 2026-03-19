@@ -15,10 +15,10 @@ interface StatCardProps {
 }
 
 const colorMap = {
-    blue: "from-cyber-blue/20 to-transparent text-cyber-blue border-cyber-blue/20",
-    purple: "from-neon-purple/20 to-transparent text-neon-purple border-neon-purple/20",
-    red: "from-alert-red/20 to-transparent text-alert-red border-alert-red/20",
-    green: "from-success-green/20 to-transparent text-success-green border-success-green/20",
+    blue: "from-cyber-blue/20 to-transparent text-cyber-blue shadow-[0_0_15px_rgba(0,229,255,0.1)]",
+    purple: "from-neon-purple/20 to-transparent text-neon-purple shadow-[0_0_15px_rgba(122,92,255,0.1)]",
+    red: "from-alert-red/20 to-transparent text-alert-red shadow-[0_0_15px_rgba(255,76,76,0.1)]",
+    green: "from-success-green/20 to-transparent text-success-green shadow-[0_0_15px_rgba(0,255,156,0.1)]",
 };
 
 const glowMap = {
@@ -31,9 +31,9 @@ const glowMap = {
 export default function StatCard({ label, value, icon: Icon, trend, trendUp, color }: StatCardProps) {
     return (
         <motion.div
-            whileHover={{ y: -4, scale: 1.02 }}
+            whileHover={{ y: -6, scale: 1.02 }}
             className={cn(
-                "glass p-6 rounded-3xl border border-white/10 group transition-all duration-300 relative overflow-hidden",
+                "glass p-6 rounded-3xl group transition-all duration-400 relative overflow-hidden shadow-depth border-none",
                 glowMap[color]
             )}
         >
@@ -44,7 +44,7 @@ export default function StatCard({ label, value, icon: Icon, trend, trendUp, col
 
             <div className="relative z-10 flex items-start justify-between mb-4">
                 <div className={cn(
-                    "p-3 rounded-2xl bg-white/5 border border-white/10 transition-colors group-hover:border-current",
+                    "p-3 rounded-2xl bg-white/5 transition-all shadow-depth group-hover:scale-110",
                     color === 'blue' && "group-hover:text-cyber-blue",
                     color === 'purple' && "group-hover:text-neon-purple",
                     color === 'red' && "group-hover:text-alert-red",
@@ -53,7 +53,7 @@ export default function StatCard({ label, value, icon: Icon, trend, trendUp, col
                     <Icon size={24} />
                 </div>
                 <div className={cn(
-                    "flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full bg-white/5 border border-white/10",
+                    "flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full bg-white/5 shadow-depth",
                     trendUp ? "text-success-green" : "text-alert-red"
                 )}>
                     {trendUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
@@ -62,8 +62,8 @@ export default function StatCard({ label, value, icon: Icon, trend, trendUp, col
             </div>
 
             <div className="relative z-10">
-                <h3 className="text-zinc-500 text-xs font-bold uppercase tracking-widest mb-1">{label}</h3>
-                <p className="text-3xl font-black text-white tracking-tight">{value}</p>
+                <h3 className="text-text-secondary text-xs font-bold uppercase tracking-widest mb-1">{label}</h3>
+                <p className="text-4xl font-black text-white tracking-tight text-glow-metric">{value}</p>
             </div>
 
             {/* Modern cyber line effect */}

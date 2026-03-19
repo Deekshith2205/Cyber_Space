@@ -49,14 +49,14 @@ export default function AIAssistant() {
     };
 
     return (
-        <div className="fixed top-16 right-0 bottom-0 w-80 bg-panel border-l border-border flex flex-col z-30 shadow-sm transition-colors duration-300">
+        <div className="fixed top-16 right-0 bottom-0 w-80 glass-premium glow-pulse-blue flex flex-col z-30 transition-all duration-300">
             {/* Header */}
-            <div className="p-4 border-b border-border flex items-center justify-between">
+            <div className="p-4 flex items-center justify-between bg-white/[0.02]">
                 <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-[#E0F2FE] flex items-center justify-center text-cyber-blue shadow-sm">
+                    <div className="w-8 h-8 rounded-full bg-cyber-blue/10 flex items-center justify-center text-cyber-blue shadow-[0_0_15px_rgba(0,229,255,0.2)]">
                         <Bot size={18} />
                     </div>
-                    <span className="font-bold text-sm text-foreground">AI Cyber Assistant</span>
+                    <span className="font-bold text-sm text-white text-glow-blue">AI Cyber Assistant</span>
                 </div>
                 <div className="flex gap-1">
                     <div className="w-2 h-2 rounded-full bg-success-green animate-pulse" />
@@ -68,7 +68,7 @@ export default function AIAssistant() {
                 {/* Welcome message */}
                 {messages.length === 0 && (
                     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex justify-start">
-                        <div className="max-w-[85%] p-3 rounded-2xl text-xs leading-relaxed bg-[#F1F5F9] dark:bg-white/5 border border-border dark:border-white/10 text-foreground">
+                        <div className="max-w-[85%] p-3 rounded-2xl text-xs leading-relaxed bg-white/10 text-white shadow-depth">
                             Hello {firstName}! I'm CYBERSPACE AI. Ask me anything about cybersecurity threats, scams, malware, and more.
                         </div>
                     </motion.div>
@@ -83,31 +83,31 @@ export default function AIAssistant() {
                             className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                         >
                             {msg.role === "user" ? (
-                                <div className="max-w-[85%] p-3 rounded-2xl text-xs leading-relaxed bg-[#E0F2FE] dark:bg-cyber-blue/20 text-[#0F172A] dark:text-white border border-cyber-blue/20">
+                                <div className="max-w-[85%] p-3 rounded-2xl text-xs leading-relaxed bg-cyber-blue/20 text-white shadow-depth">
                                     {msg.text}
                                 </div>
                             ) : msg.isDomainBlocked ? (
                                 /* Domain blocked */
-                                <div className="max-w-[85%] p-3 rounded-2xl text-xs leading-relaxed bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 flex gap-2 items-start">
+                                <div className="max-w-[85%] p-3 rounded-2xl text-xs leading-relaxed bg-yellow-500/10 text-yellow-400 flex gap-2 items-start shadow-depth">
                                     <AlertTriangle size={14} className="mt-0.5 shrink-0" />
                                     {msg.text}
                                 </div>
                             ) : msg.isError ? (
                                 /* Error */
-                                <div className="max-w-[85%] p-3 rounded-2xl text-xs leading-relaxed bg-red-500/10 border border-red-500/30 text-red-400">
+                                <div className="max-w-[85%] p-3 rounded-2xl text-xs leading-relaxed bg-red-500/10 text-red-400 shadow-depth">
                                     {msg.text}
                                 </div>
                             ) : msg.analysis ? (
                                 /* Structured analysis card */
                                 <div className="w-full space-y-1">
-                                    <div className="rounded-xl border border-border dark:border-white/10 overflow-hidden text-xs">
-                                        <div className="bg-white/5 px-3 py-2 flex items-center gap-2 border-b border-border dark:border-white/5">
+                                    <div className="rounded-xl overflow-hidden text-xs shadow-depth bg-white/[0.03]">
+                                        <div className="bg-white/5 px-3 py-2 flex items-center gap-2">
                                             {(() => {
                                                 const Icon = THREAT_ICONS[msg.analysis!.threat_type] || ShieldCheck;
-                                                return <Icon size={12} className="text-cyber-blue" />;
+                                                return <Icon size={12} className="text-cyber-blue drop-shadow-[0_0_5px_rgba(0,229,255,0.5)]" />;
                                             })()}
                                             <span className="font-bold text-foreground">{msg.analysis.threat_type}</span>
-                                            <span className={cn("ml-auto px-2 py-0.5 rounded-full text-[10px] font-bold border",
+                                            <span className={cn("ml-auto px-2 py-0.5 rounded-full text-[10px] font-bold border-none",
                                                 SEVERITY_STYLES[msg.analysis.severity] || SEVERITY_STYLES.Medium
                                             )}>
                                                 {msg.analysis.severity}
@@ -127,7 +127,7 @@ export default function AIAssistant() {
                                     </div>
                                 </div>
                             ) : (
-                                <div className="max-w-[85%] p-3 rounded-2xl text-xs leading-relaxed bg-[#F1F5F9] dark:bg-white/5 border border-border dark:border-white/10 text-foreground">
+                                <div className="max-w-[85%] p-3 rounded-2xl text-xs leading-relaxed bg-white/10 text-white shadow-depth">
                                     {msg.text}
                                 </div>
                             )}
@@ -149,30 +149,30 @@ export default function AIAssistant() {
             </div>
 
             {/* Suggestions + Input */}
-            <div className="p-4 border-t border-border space-y-3">
+            <div className="p-4 space-y-3 bg-white/[0.02]">
                 <div className="grid grid-cols-1 gap-1.5">
                     {suggestions.map((s) => (
                         <button
                             key={s.text}
                             onClick={() => setInput(s.text)}
-                            className="px-3 py-2 bg-panel-secondary hover:bg-slate-200 dark:hover:bg-white/10 border border-border rounded-xl text-[10px] text-left text-slate-500 hover:text-foreground transition-all flex items-center gap-2 group shadow-sm"
+                            className="px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-[10px] text-left text-text-secondary hover:text-white transition-all flex items-center gap-2 group shadow-sm"
                         >
-                            <s.icon size={12} className="text-cyber-blue group-hover:scale-110 transition-transform" />
+                            <s.icon size={12} className="text-cyber-blue group-hover:drop-shadow-[0_0_5px_rgba(0,229,255,0.5)] transition-all" />
                             {s.text}
                         </button>
                     ))}
                 </div>
 
                 <div className="relative">
-                    <input
-                        type="text"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                        placeholder="Type your message..."
-                        disabled={isLoading}
-                        className="w-full bg-panel border border-border rounded-xl py-3 pl-4 pr-12 focus:outline-none focus:border-cyber-blue focus:ring-2 focus:ring-cyber-blue/10 transition-all text-xs text-foreground placeholder:text-slate-400 disabled:opacity-50"
-                    />
+                        <input
+                            type="text"
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                            placeholder="Type your message..."
+                            disabled={isLoading}
+                            className="w-full bg-white/5 border-none rounded-xl py-3 pl-4 pr-12 focus:outline-none focus:ring-2 focus:ring-cyber-blue/20 transition-all text-xs text-foreground placeholder:text-text-secondary/50 shadow-inset-deep"
+                        />
                     <div className="absolute right-2 top-1.5">
                         <button
                             onClick={handleSend}

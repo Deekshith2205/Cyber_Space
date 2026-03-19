@@ -38,7 +38,7 @@ export default function ThreatMap() {
         return () => clearInterval(interval);
     }, []);
     return (
-        <div className="glass p-6 rounded-3xl border border-white/10 h-[400px] flex flex-col relative overflow-hidden group">
+        <div className="glass p-6 rounded-3xl shadow-depth border-none h-[400px] flex flex-col relative overflow-hidden group">
             <div className="flex items-center justify-between mb-6 relative z-10">
                 <div className="flex items-center gap-3">
                     <div className="p-2 bg-cyber-blue/10 rounded-lg text-cyber-blue">
@@ -49,7 +49,7 @@ export default function ThreatMap() {
                         <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Real-time attack vector monitoring</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/10">
+                <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full shadow-depth">
                     <span className="w-2 h-2 rounded-full bg-alert-red animate-ping" />
                     <span className="text-[10px] font-bold text-alert-red uppercase tracking-wider">Live tracking</span>
                 </div>
@@ -102,7 +102,7 @@ export default function ThreatMap() {
                 </div>
             </div>
 
-            <div className="absolute bottom-6 right-6 p-4 glass rounded-2xl border border-white/5 space-y-2 w-48 z-10">
+            <div className="absolute bottom-6 right-6 p-4 glass rounded-2xl shadow-depth border-none space-y-2 w-48 z-10">
                 <h4 className="text-[10px] font-bold text-zinc-500 uppercase flex items-center gap-2">
                     <Activity size={12} className="text-cyber-blue" />
                     Recent Incursions

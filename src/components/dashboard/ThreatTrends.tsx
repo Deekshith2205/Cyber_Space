@@ -33,20 +33,20 @@ export default function ThreatTrends() {
         fetchTrends();
     }, []);
     return (
-        <div className="glass p-6 rounded-3xl border border-white/10 h-[300px] flex flex-col group">
+        <div className="glass p-6 rounded-3xl shadow-depth border-none h-[300px] flex flex-col group">
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-neon-purple/10 rounded-lg text-neon-purple">
+                    <div className="p-2 bg-neon-purple/10 rounded-lg text-neon-purple shadow-[0_0_10px_rgba(122,92,255,0.2)]">
                         <TrendingUp size={20} />
                     </div>
                     <div>
-                        <h3 className="text-sm font-bold text-white">Monthly Threat Trends</h3>
-                        <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Heuristic analysis projection</p>
+                        <h3 className="text-sm font-bold text-white text-glow-primary">Monthly Threat Trends</h3>
+                        <p className="text-[10px] text-text-secondary uppercase tracking-widest font-bold">Heuristic analysis projection</p>
                     </div>
                 </div>
             </div>
 
-            <div className="flex-1 w-full">
+            <div className="flex-1 w-full translate-y-2">
                 <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={data}>
                         <defs>
@@ -60,20 +60,21 @@ export default function ThreatTrends() {
                             dataKey="name"
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fill: '#71717a', fontSize: 10, fontWeight: 600 }}
+                            tick={{ fill: '#A8C1D9', fontSize: 10, fontWeight: 600 }}
                             dy={10}
                         />
                         <YAxis
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fill: '#71717a', fontSize: 10, fontWeight: 600 }}
+                            tick={{ fill: '#A8C1D9', fontSize: 10, fontWeight: 600 }}
                         />
                         <Tooltip
                             contentStyle={{
-                                backgroundColor: '#0B0F14',
-                                border: '1px solid rgba(255,255,255,0.1)',
+                                backgroundColor: 'rgba(11, 15, 20, 0.95)',
+                                border: 'none',
                                 borderRadius: '12px',
-                                fontSize: '10px'
+                                fontSize: '10px',
+                                boxShadow: '0 10px 30px rgba(0,0,0,0.6)'
                             }}
                             itemStyle={{ color: '#00E5FF' }}
                         />
