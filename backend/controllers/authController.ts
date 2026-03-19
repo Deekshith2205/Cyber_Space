@@ -47,29 +47,54 @@ export class AuthController {
     // @route   POST /api/auth/login
     // @access  Public
     static async loginUser(req: Request, res: Response) {
-        const { email, password } = req.body;
-
         try {
-            const user = await User.findOne({ email });
+            console.log("Incoming login:", req.body);
+            const { email, password } = req.body;
 
-            if (user && (await user.comparePassword(password))) {
-                res.json({
-                    status: "success",
-                    token: generateToken((user._id as unknown) as string, user.email),
-                    user: {
-                        _id: user._id,
-                        name: user.name,
-                        email: user.email,
-                        role: user.role,
-                        designation: user.designation || "user"
-                    }
-                });
-            } else {
-                res.status(401).json({ status: "error", message: "Invalid email or password" });
+            // STEP 1 — VALIDATE REQUEST BODY
+            if (!email || !password) {
+                return res.status(400).json({ status: "error", message: "Email and password required" });
             }
+
+            // STEP 2 — FIND USER SAFELY
+            const user = await User.findOne({ email });
+            console.log("User found:", user ? "YES" : "NO");
+
+            if (!user) {
+                return res.status(400).json({ status: "error", message: "User not found" });
+            }
+
+            // STEP 3 — PASSWORD VERIFICATION
+            const isMatch = await user.comparePassword(password);
+            if (!isMatch) {
+                return res.status(400).json({ status: "error", message: "Invalid credentials" });
+            }
+
+            // STEP 4 — JWT TOKEN GENERATION
+            if (!process.env.JWT_SECRET) {
+                console.error("JWT_SECRET is missing in .env");
+                return res.status(500).json({ status: "error", message: "Internal server error: JWT config missing" });
+            }
+
+            const token = generateToken((user._id as any).toString(), user.email);
+
+            // STEP 5 — SAFE RESPONSE FORMAT
+            res.json({
+                status: "success",
+                token,
+                user: {
+                    _id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                    designation: user.designation || "user"
+                }
+            });
+
         } catch (error: any) {
-            console.error('Login error:', error);
-            res.status(500).json({ status: "error", message: "Server error during login" });
+            // STEP 6 — GLOBAL ERROR HANDLING
+            console.error("LOGIN ERROR:", error.message, error.stack);
+            res.status(500).json({ status: "error", message: "Internal server error" });
         }
     }
     

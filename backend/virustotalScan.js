@@ -81,7 +81,7 @@ async function scanUrl(url, apiKey) {
             harmless: stats.harmless,
             undetected: stats.undetected,
             scanDate: new Date().toISOString().split('T')[0],
-            analysisLink: `https://www.virustotal.com/gui/url/${analysisId.split('-')[1]}`,
+            analysisLink: `https://www.virustotal.com/gui/url/${analysisId.includes('-') ? analysisId.split('-')[1] : analysisId}`,
             engineResults: detections.length > 0 ? detections : engineResults.slice(0, 10) // Show detections or first 10
         };
 

@@ -9,12 +9,14 @@ const adminRoutes = require('./routes/adminRoutes').default;
 const connectDatabase = require('./config/database').default;
 const scanRoutes = require('./routes/scanRoutes').default;
 const authRoutes = require('./routes/authRoutes').default;
+const aiRoutes = require('./routes/aiRoutes').default;
 const authMiddleware = require('./middleware/authMiddleware').default;
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
+app.use(express.json());
 // Connect to MongoDB
 connectDatabase();
 
@@ -32,6 +34,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/threat', threatRoutes);
 app.use('/api', scanRoutes);
+app.use('/api/ai', aiRoutes);
 
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');

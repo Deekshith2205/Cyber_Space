@@ -2,10 +2,11 @@ import axios from 'axios';
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 
 interface UserProfile {
-  id: string;
+  _id: string;
   name: string;
   email: string;
   role: string;
+  designation: string;
   avatarInitials: string;
   clearanceLevel: number;
 }
@@ -19,17 +20,21 @@ interface UserState {
 export const saveProfileToServer = createAsyncThunk(
   'user/saveProfile',
   async (profile: Partial<UserProfile>) => {
-    const response = await axios.post('http://localhost:5000/api/user/profile', profile);
-    return response.data.profile;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const response = await axios.put('http://localhost:5000/api/user/update', profile, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data.user;
   }
 );
 
 const getInitialProfile = (): UserProfile => {
   const defaultProfile: UserProfile = {
-    id: "",
+    _id: "",
     name: "",
     email: "",
     role: "Analyst",
+    designation: "Security Analyst",
     avatarInitials: "",
     clearanceLevel: 0,
   };
