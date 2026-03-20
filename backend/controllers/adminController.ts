@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/authMiddleware';
 import UserActivityLog from '../models/UserActivityLog';

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import express from 'express';
 import { PhishingController } from '../controllers/phishingController';
 import { VulnerabilityController } from '../controllers/vulnerabilityController';

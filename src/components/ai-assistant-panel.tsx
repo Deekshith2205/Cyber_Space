@@ -117,7 +117,7 @@ export default function AIAssistant() {
                             {messages.length === 0 && (
                                 <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex justify-start">
                                     <div className="max-w-[90%] p-4 rounded-2xl rounded-tl-none text-xs leading-relaxed bg-panel-secondary text-foreground shadow-sm border border-border font-medium">
-                                        Hello {firstName}! I'm CYBERSPACE AI. How can I help you secure your digital environment today?
+                                        Hello {firstName}! I&apos;m CYBERSPACE AI. How can I help you secure your digital environment today?
                                     </div>
                                 </motion.div>
                             )}

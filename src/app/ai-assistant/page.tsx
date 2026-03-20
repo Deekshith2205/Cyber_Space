@@ -86,7 +86,7 @@ function TypewriterText({ text, speed = 18 }: { text: string; speed?: number }) 
 
     useEffect(() => {
         indexRef.current = 0;
-        setDisplayed("");
+        Promise.resolve().then(() => setDisplayed(""));
         const id = setInterval(() => {
             indexRef.current++;
             setDisplayed(text.slice(0, indexRef.current));
@@ -277,6 +277,7 @@ export default function AIAssistantPage() {
     const [sideTab, setSideTab] = useState<"suggestions" | "history">("suggestions");
     const [isListening, setIsListening] = useState(false);
     const bottomRef = useRef<HTMLDivElement>(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const recognitionRef = useRef<any>(null);
 
     useEffect(() => {
@@ -317,6 +318,7 @@ export default function AIAssistantPage() {
         recognition.interimResults = false;
         recognition.maxAlternatives = 1;
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         recognition.onresult = (e: any) => {
             const transcript = e.results[0][0].transcript;
             setInput((prev: string) => (prev ? prev + " " + transcript : transcript));
