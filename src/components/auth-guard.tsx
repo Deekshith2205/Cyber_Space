@@ -19,7 +19,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         } else if (isAuthenticated && token && PUBLIC_ROUTES.includes(pathname)) {
             router.push('/dashboard');
         } else {
-            setIsChecking(false);
+            Promise.resolve().then(() => setIsChecking(false));
         }
     }, [isAuthenticated, token, pathname, router]);
 

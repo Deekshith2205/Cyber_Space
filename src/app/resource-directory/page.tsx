@@ -351,7 +351,7 @@ export default function ResourceDirectoryPage() {
               </div>
               <div>
                 <h3 className="text-xl font-bold text-foreground">No cybersecurity resources found</h3>
-                <p className="text-text-secondary max-w-xs mx-auto">Try adjusting your search terms or filter to find what you're looking for.</p>
+                <p className="text-text-secondary max-w-xs mx-auto">Try adjusting your search terms or filter to find what you&apos;re looking for.</p>
               </div>
               <button 
                 onClick={() => { setSearchQuery(""); setActiveCategory("All"); }}

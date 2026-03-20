@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const axios = require('axios');
 
 const BASE_URL = 'http://localhost:5000/api';

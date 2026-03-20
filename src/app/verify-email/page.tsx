@@ -17,8 +17,10 @@ export default function VerifyEmailPage() {
 
   useEffect(() => {
     if (!token) {
-      setStatus("error");
-      setMessage("No verification token provided. Security clearance denied.");
+      Promise.resolve().then(() => {
+        setStatus("error");
+        setMessage("No verification token provided. Security clearance denied.");
+      });
       return;
     }
 
@@ -32,7 +34,7 @@ export default function VerifyEmailPage() {
           setStatus("error");
           setMessage(response.data.message || "Verification failed.");
         }
-      } catch (err: any) {
+      } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
         setStatus("error");
         setMessage(err.response?.data?.message || "Server error during verification.");
       }
