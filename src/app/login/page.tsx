@@ -14,7 +14,11 @@ export default function LoginPage() {
 
             <div className="relative z-10 w-full flex flex-col items-center">
                 <div className="text-center mb-8">
-                    <h1 className="text-4xl font-black tracking-tight text-foreground mb-2 text-glow-primary uppercase">CYBERSPACE</h1>
+                    <img 
+                        src="/cyberspacelogo.jpeg" 
+                        alt="Cyberspace Logo" 
+                        className="h-16 w-auto object-contain mx-auto mb-4" 
+                    />
                     <p className="text-text-secondary font-mono text-[10px] tracking-[0.2em] uppercase font-black">Command Center Authorization</p>
                 </div>
                 

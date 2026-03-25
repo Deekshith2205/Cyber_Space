@@ -5,7 +5,6 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { Shield, CheckCircle2, XCircle, Loader2, ChevronRight } from "lucide-react";
 import axios from "axios";
 import { cn } from "@/lib/utils";
-import CyberBackground from "@/components/ui/CyberBackground";
 
 export default function VerifyEmailPage() {
   const searchParams = useSearchParams();
@@ -45,7 +44,6 @@ export default function VerifyEmailPage() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center p-6 bg-background">
-      <CyberBackground />
       
       <div className="relative z-10 w-full max-w-md glass-premium rounded-[30px] p-10 text-center shadow-2xl border border-white/10 animate-fade-in">
         <div className="flex justify-center mb-6">

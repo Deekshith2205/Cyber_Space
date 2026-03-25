@@ -102,13 +102,13 @@ export class AuthController {
             }
 
             // STEP 3.5 — VERIFICATION CHECK
-            if (!user.isVerified) {
-                return res.status(403).json({ 
-                    status: "error", 
-                    message: "Please verify your email address to access CyberSpace",
-                    needsVerification: true 
-                });
-            }
+            // if (!user.isVerified) {
+            //     return res.status(403).json({ 
+            //         status: "error", 
+            //         message: "Please verify your email address to access CyberSpace",
+            //         needsVerification: true 
+            //     });
+            // }
 
             // Check if password is weak for existing user (to prompt upgrade)
             const isWeakPassword = !validatePasswordStrength(password);

@@ -4,7 +4,6 @@ import React from "react";
 import TopNavbar from "@/components/top-navbar";
 import Sidebar from "@/components/sidebar";
 import AIAssistantPanel from "@/components/ai-assistant-panel";
-import CyberBackground from "@/components/ui/CyberBackground";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
@@ -38,7 +37,6 @@ export default function DashboardLayout({
                 </div>
             </main>
             <AIAssistantPanel />
-            <CyberBackground />
         </div>
     );
 }
