@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CyberSolver AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --bg: #0a0f1e;
+        --accent: #3b82f6;
+        --glass-bg: rgba(255, 255, 255, 0.05);
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --text: #ffffff;
+        --text-muted: #9ca3af;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; min-height: 100vh; display: flex; flex-direction: column; }
+    canvas#bg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+    
+    .container { max-width: 1000px; margin: 0 auto; padding: 2rem; position: relative; z-index: 1; flex: 1; }
+    
+    header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0 3rem; }
+    .logo { font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+    .logo span { color: var(--accent); }
+    .settings-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.5rem; border-radius: 50%; transition: all 0.2s; }
+    .settings-btn:hover { background: var(--glass-bg); color: var(--text); }
+    
+    .hero { text-align: center; margin-bottom: 3rem; }
+    .hero h1 { font-size: 3rem; font-weight: 700; margin-bottom: 2rem; background: linear-gradient(to right, #fff, #9ca3af); -webkit-background-clip: text; color: transparent; line-height: 1.2; }
+    
+    .search-box { display: flex; gap: 0.5rem; max-width: 800px; margin: 0 auto 1.5rem; background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 0.5rem; border-radius: 999px; backdrop-filter: blur(10px); }
+    .search-box input { flex: 1; background: transparent; border: none; color: white; padding: 0.5rem 1rem; font-size: 1.1rem; outline: none; }
+    .search-box input::placeholder { color: var(--text-muted); }
+    .mic-btn, .analyze-btn { border: none; border-radius: 999px; padding: 0.75rem 1.5rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem; }
+    .mic-btn { background: transparent; color: var(--text-muted); padding: 0.75rem; }
+    .mic-btn:hover { background: var(--glass-bg); color: white; }
+    .mic-btn.recording { color: var(--danger); animation: pulse 1.5s infinite; }
+    .analyze-btn { background: var(--accent); color: white; font-size: 1rem; }
+    .analyze-btn:hover { background: #2563eb; transform: translateY(-1px); }
+    .analyze-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+    
+    .trust-badges { display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; margin-bottom: 4rem; color: var(--text-muted); font-size: 0.875rem; }
+    .badge { display: flex; align-items: center; gap: 0.5rem; }
+    
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
+    .card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 1rem; padding: 1.5rem; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(10px); }
+    .card:hover { transform: translateY(-4px); border-color: var(--accent); background: rgba(255,255,255,0.08); box-shadow: 0 10px 30px rgba(59, 130, 246, 0.1); }
+    .card h3 { font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+    .card p { color: var(--text-muted); font-size: 0.875rem; line-height: 1.4; }
+    
+    .results-panel { display: none; margin-top: 3rem; animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+    .results-panel.visible { display: block; }
+
+    .loading-state { display: none; flex-direction: column; gap: 1rem; margin: 2rem 0; }
+    .loading-state.visible { display: flex; }
+    .step { display: flex; align-items: center; gap: 1rem; color: var(--text-muted); opacity: 0.5; transition: all 0.3s; }
+    .step.active { opacity: 1; color: var(--text); }
+    .step.done { opacity: 1; color: var(--success); }
+    .step-spinner { width: 1.25rem; height: 1.25rem; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; }
+    .step.active .step-spinner { animation: spin 1s linear infinite; }
+    .step.done .step-spinner { display: none; }
+    .step.done::before { content: '✓'; font-weight: bold; width: 1.25rem; text-align: center; }
+
+    .result-content { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 1rem; padding: 2rem; backdrop-filter: blur(10px); }
+    .result-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--glass-border); }
+    .risk-badges { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .tag { padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .tag-low { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
+    .tag-medium { background: rgba(245, 158, 11, 0.2); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .tag-high, .tag-critical { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+    
+    .alert-banner { display: none; background: rgba(239, 68, 68, 0.15); border: 1px solid var(--danger); color: #fca5a5; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; font-weight: 500; animation: pulse 2s infinite; }
+    .alert-banner.visible { display: flex; align-items: center; gap: 0.75rem; }
+    
+    .helpline-banner { display: none; background: linear-gradient(90deg, #1e3a8a, #1d4ed8); padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 2rem; color: white; text-align: center; font-size: 1.125rem; font-weight: 600; border: 1px solid #3b82f6; }
+    .helpline-banner.visible { display: block; }
+    
+    .action-buttons { display: flex; gap: 1rem; margin-top: 2rem; pt: 2rem; border-top: 1px solid var(--glass-border); }
+    .btn-secondary { background: var(--glass-bg); border: 1px solid var(--glass-border); color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem; }
+    .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+    .btn-whatsapp { background: #25D366; border: none; color: white; }
+    .btn-whatsapp:hover { background: #1ebe57; }
+
+    /* Markdown content styles */
+    .md-content h2 { font-size: 1.25rem; margin: 2rem 0 1rem; color: var(--text); border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem; }
+    .md-content h2:first-child { margin-top: 0; }
+    .md-content p { margin-bottom: 1rem; color: var(--text-muted); line-height: 1.6; }
+    .md-content ul, .md-content ol { margin: 0 0 1rem 1.5rem; color: var(--text-muted); line-height: 1.6; }
+    .md-content li { margin-bottom: 0.5rem; }
+    .md-content strong { color: var(--text); }
+    .md-content a { color: var(--accent); text-decoration: none; }
+    .md-content a:hover { text-decoration: underline; }
+
+    /* Modals */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 50; display: none; align-items: center; justify-content: center; }
+    .modal-overlay.active { display: flex; }
+    .modal { background: #0f172a; border: 1px solid var(--glass-border); border-radius: 1rem; padding: 2rem; width: 90%; max-width: 500px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); position: relative; }
+    .modal-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
+    .modal h2 { margin-bottom: 1.5rem; }
+    .modal .form-group { margin-bottom: 1.5rem; }
+    .modal label { display: block; margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--text-muted); }
+    .modal input, .modal textarea { width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); color: white; padding: 0.75rem; border-radius: 0.5rem; outline: none; }
+    .modal input:focus, .modal textarea:focus { border-color: var(--accent); }
+    .modal-res { margin-top: 1rem; max-height: 300px; overflow-y: auto; font-size: 0.875rem; color: var(--text-muted); }
+
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 768px) {
+        .grid { grid-template-columns: 1fr; }
+        .hero h1 { font-size: 2rem; }
+        .trust-badges { gap: 1rem; }
+    }
+
+    /* Print styles */
+    @media print {
+        body { background: white; color: black; }
+        canvas, .search-box, .trust-badges, .grid, header, .action-buttons { display: none !important; }
+        .results-panel { display: block !important; margin: 0; animation: none; }
+        .result-content { background: none; border: none; padding: 0; }
+        .md-content p, .md-content ul, .md-content h2 { color: black !important; }
+        .md-content h2 { border-color: #eee; }
+        .tag { border: 1px solid #ccc !important; }
+        @page { margin: 2cm; }
+        .footer-print { display: block !important; position: fixed; bottom: 0; left: 0; width: 100%; text-align: center; border-top: 1px solid #eee; padding-top: 1rem; font-size: 0.875rem; color: #666; }
+    }
+    .footer-print { display: none; }
+    
+    .error-inline { color: var(--danger); font-size: 0.875rem; margin-top: 1rem; display: none; }
+</style>
+</head>
+<body>
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="container">
+        <header>
+            <div class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Cyber<span>Solver</span>
+            </div>
+            <button class="settings-btn" onclick="openModal('settings-modal')" title="Settings">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            </button>
+        </header>
+
+        <main>
+            <div class="hero">
+                <h1>Describe your cyber problem.<br>Get instant help.</h1>
+                
+                <div class="search-box">
+                    <button class="mic-btn" id="micBtn" title="Speak your problem">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                    </button>
+                    <input type="text" id="mainInput" placeholder="E.g., I clicked a strange SMS link about electricity bill...">
+                    <button class="analyze-btn" id="analyzeBtn" onclick="analyzeProblem()">
+                        Analyze Now
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    </button>
+                </div>
+                <div id="mainError" class="error-inline">Please configure your API key in settings first.</div>
+
+                <div class="trust-badges">
+                    <div class="badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Trusted Guidance</div>
+                    <div class="badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>India-specific Scam Detection</div>
+                    <div class="badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>No Technical Knowledge Required</div>
+                    <div class="badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Your data is not stored</div>
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="card" onclick="openModal('hibp-modal')">
+                    <h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M2 12h4l2-9 5 18 3-9h6"/></svg>Check Data Breach</h3>
+                    <p>Find out if your email or phone number was exposed in a recent database leak.</p>
+                </div>
+                <div class="card" onclick="openModal('cybercrime-modal')">
+                    <h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Report Cybercrime</h3>
+                    <p>Quick access to official portals and helplines to report financial or digital fraud natively.</p>
+                </div>
+                <div class="card" onclick="openModal('link-modal')">
+                    <h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>Analyze Suspicious Link</h3>
+                    <p>Paste an unknown URL to check for phishing parameters and malicious patterns safely.</p>
+                </div>
+                <div class="card" onclick="openModal('perms-modal')">
+                    <h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Check App Permissions</h3>
+                    <p>Audit what access a mobile app is asking for and whether it's invasive.</p>
+                </div>
+            </div>
+
+            <div class="loading-state" id="loadingState">
+                <div class="step active" id="step1"><div class="step-spinner"></div> Detecting language & problem type...</div>
+                <div class="step" id="step2"><div class="step-spinner"></div> Assessing risk level...</div>
+                <div class="step" id="step3"><div class="step-spinner"></div> Building action plan...</div>
+                <div class="step" id="step4"><div class="step-spinner"></div> Compiling India-specific guidance...</div>
+            </div>
+
+            <div class="results-panel" id="resultsPanel">
+                <div class="alert-banner" id="alertBanner">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    CRITICAL ALERT: High risk of immediate harm or loss!
+                </div>
+                
+                <div class="helpline-banner" id="helplineBanner">
+                    📞 Call 1930 immediately to freeze fraudulent transactions
+                </div>
+
+                <div class="result-content">
+                    <div class="result-header">
+                        <div class="risk-badges">
+                            <span class="tag" id="threatTag">THREAT</span>
+                            <span class="tag" id="riskBadge">RISK</span>
+                        </div>
+                    </div>
+                    <div class="md-content" id="mdContent"></div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn-secondary" onclick="window.print()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Save PDF Report</button>
+                        <button class="btn-secondary btn-whatsapp" onclick="shareWhatsApp()"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.549-2.958-2.66-.084-.111-.705-.939-.705-1.791s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.099.824z"/></svg>Share warning</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-print">
+                Report cybercrimes at https://cybercrime.gov.in | National Cyber Crime Reporting Portal: Call 1930
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal-overlay" id="settings-modal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal('settings-modal')">&times;</button>
+            <h2>API Settings</h2>
+            <div class="form-group">
+                <label>Gemini API Key</label>
+                <input type="password" id="apiKey" placeholder="AIzaSy...">
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">Keys are stored locally in your browser session only.</p>
+            </div>
+            <button class="analyze-btn" style="width: 100%; justify-content: center;" onclick="saveConfig()">Save Settings</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="hibp-modal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal('hibp-modal')">&times;</button>
+            <h2>Check Data Breach</h2>
+            <div class="form-group">
+                <label>HaveIBeenPwned API Key</label>
+                <input type="password" id="hibpApiKey" placeholder="Enter HIBP API Key">
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="breachEmail" placeholder="you@example.com">
+            </div>
+            <button class="analyze-btn" style="width: 100%; justify-content: center;" onclick="checkBreach()">Check Now</button>
+            <div id="breachRes" class="modal-res"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="cybercrime-modal">
+        <div class="modal" style="text-align: center;">
+            <button class="modal-close" onclick="closeModal('cybercrime-modal')">&times;</button>
+            <h2 style="color: var(--danger)">Report Cybercrime</h2>
+            <p style="margin-bottom: 2rem; color: var(--text-muted)">If you are a victim of financial cyber fraud, immediately report it to stop further transactions.</p>
+            <div style="background: var(--glass-bg); padding: 1.5rem; border-radius: 1rem; margin-bottom: 1.5rem; border: 1px solid var(--danger);">
+                <h1 style="font-size: 3rem; margin: 0; color: white;">1930</h1>
+                <p>National Helpline Number</p>
+            </div>
+            <a href="https://cybercrime.gov.in" target="_blank" style="display: block; width: 100%; background: var(--accent); color: white; padding: 1rem; border-radius: 999px; text-decoration: none; font-weight: 600;">Open cybercrime.gov.in 👉</a>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="link-modal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal('link-modal')">&times;</button>
+            <h2>Analyze Suspicious Link</h2>
+            <div class="form-group">
+                <label>Paste exact URL to analyze</label>
+                <input type="url" id="suspiciousUrl" placeholder="http://bit.ly/claim-prize">
+            </div>
+            <button class="analyze-btn" style="width: 100%; justify-content: center;" onclick="analyzeSpecific('link')">Analyze URL</button>
+            <div id="linkRes" class="modal-res"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="perms-modal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal('perms-modal')">&times;</button>
+            <h2>Check App Permissions</h2>
+            <div class="form-group">
+                <label>Paste requested permissions (comma separated)</label>
+                <textarea id="appPerms" rows="3" placeholder="Read SMS, Contacts, Location, Camera, Microphone"></textarea>
+            </div>
+            <button class="analyze-btn" style="width: 100%; justify-content: center;" onclick="analyzeSpecific('perms')">Evaluate Permissions</button>
+            <div id="permsRes" class="modal-res"></div>
+        </div>
+    </div>
+
+    <script>
+        // Init Star Canvas
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        const particles = [];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        for (let i = 0; i < 60; i++) {
+            particles.push({
+                x: Math.random() * width, y: Math.random() * height,
+                vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5,
+                radius: Math.random() * 2 + 0.5
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0,0,width,height);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            for (let i = 0; i < particles.length; i++) {
+                let p = particles[i];
+                p.x += p.vx; p.y += p.vy;
+                if(p.x < 0 || p.x > width) p.vx *= -1;
+                if(p.y < 0 || p.y > height) p.vy *= -1;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI*2);
+                ctx.fill();
+                
+                for(let j = i + 1; j < particles.length; j++) {
+                    let p2 = particles[j];
+                    let dx = p.x - p2.x, dy = p.y - p2.y;
+                    let dist = Math.sqrt(dx*dx + dy*dy);
+                    if(dist < 150) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(59, 130, 246, ${1 - dist/150})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(draw);
+        }
+        draw();
+
+        // System Config
+        const SYSTEM_PROMPT = `You are CyberSolver AI for Indian users. Always respond in this exact format with these headers: ## PROBLEM SUMMARY\n## THREAT TYPE\n## RISK LEVEL (LOW/MEDIUM/HIGH/CRITICAL)\n## WHY THIS IS DANGEROUS\n## IMMEDIATE ACTION STEPS (numbered, with ✅ DO: and ⛔ DO NOT: prefixes)\n## VERIFIED OFFICIAL LINKS (only cybercrime.gov.in, haveibeenpwned.com, official platform pages)\n## INDIA-SPECIFIC GUIDANCE (always mention 1930 helpline for financial fraud)\n## PREVENTION TIPS (5–7 bullets). Never give hacking instructions. Never fabricate URLs.`;
+
+        // Modals logic
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        
+        function saveConfig() {
+            const key = document.getElementById('apiKey').value;
+            if(key) sessionStorage.setItem('cyber_gemini_key', key);
+            closeModal('settings-modal');
+            document.getElementById('mainError').style.display = 'none';
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const stored = sessionStorage.getItem('cyber_gemini_key');
+            if(stored) document.getElementById('apiKey').value = stored;
+        });
+
+        // Speech Recognition
+        const micBtn = document.getElementById('micBtn');
+        const mainInput = document.getElementById('mainInput');
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if(SpeechRecognition) {
+            const recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-IN'; // Works for english/hinglish generally
+            
+            micBtn.addEventListener('click', () => {
+                if(micBtn.classList.contains('recording')) {
+                    recognition.stop();
+                    micBtn.classList.remove('recording');
+                } else {
+                    recognition.start();
+                    micBtn.classList.add('recording');
+                }
+            });
+            
+            recognition.onresult = (e) => {
+                mainInput.value = e.results[0][0].transcript;
+                micBtn.classList.remove('recording');
+            };
+            recognition.onerror = () => micBtn.classList.remove('recording');
+            recognition.onend = () => micBtn.classList.remove('recording');
+        } else {
+            micBtn.style.display = 'none';
+        }
+
+        // Shared API call logic for Gemini API format (as per instruction "Use Gemini if want")
+        async function callGemini(promptText, resNode) {
+            const key = sessionStorage.getItem('cyber_gemini_key');
+            if(!key) { 
+                if(resNode) resNode.innerHTML = '<span style="color:var(--danger)">Please set Gemini API key in settings.</span>'; 
+                else {
+                    document.getElementById('mainError').style.display = 'block';
+                    document.getElementById('mainError').innerText = 'Please set Gemini API key in settings.';
+                }
+                throw new Error('No API key'); 
+            }
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: promptText }] }]
+                    })
+                });
+                
+                if(!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error?.message || 'API request failed');
+                }
+                
+                const data = await response.json();
+                return data.candidates[0].content.parts[0].text;
+            } catch (err) {
+                if(resNode) resNode.innerHTML = `<span style="color:var(--danger)">Error: ${err.message}</span>`;
+                throw err;
+            }
+        }
+
+        // Main Analysis
+        async function analyzeProblem() {
+            const query = mainInput.value.trim();
+            if(!query) return;
+            
+            const btn = document.getElementById('analyzeBtn');
+            btn.disabled = true;
+            document.getElementById('mainError').style.display = 'none';
+            document.getElementById('resultsPanel').classList.remove('visible');
+            
+            const loading = document.getElementById('loadingState');
+            loading.classList.add('visible');
+            [1,2,3,4].forEach(i => {
+                const el = document.getElementById('step'+i);
+                el.className = 'step' + (i===1 ? ' active' : '');
+            });
+
+            // Simulate progress steps visually
+            const progressIval = setInterval(() => {
+                const active = document.querySelector('.step.active:not(.done)');
+                if(active && active.id !== 'step4') {
+                    active.classList.add('done');
+                    active.classList.remove('active');
+                    active.nextElementSibling.classList.add('active');
+                }
+            }, 1200);
+
+            try {
+                const prompt = `${SYSTEM_PROMPT}\n\nUSER PROBLEM:\n${query}`;
+                const result = await callGemini(prompt, null);
+                clearInterval(progressIval);
+                [1,2,3,4].forEach(i => document.getElementById('step'+i).className = 'step done');
+                setTimeout(() => {
+                    loading.classList.remove('visible');
+                    renderResults(result);
+                }, 500);
+            } catch (e) {
+                clearInterval(progressIval);
+                loading.classList.remove('visible');
+                document.getElementById('mainError').style.display = 'block';
+                document.getElementById('mainError').innerText = "An error occurred: " + e.message;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        let currentResultData = {};
+
+        function renderResults(markdown) {
+            const panel = document.getElementById('resultsPanel');
+            const mdContent = document.getElementById('mdContent');
+            const threatTag = document.getElementById('threatTag');
+            const riskBadge = document.getElementById('riskBadge');
+            const alertBanner = document.getElementById('alertBanner');
+            const helplineBanner = document.getElementById('helplineBanner');
+            
+            panel.classList.add('visible');
+            
+            // Extract Risk Level
+            const riskMatch = markdown.match(/## RISK LEVEL[^\n]*\n(.*)/i);
+            const riskText = riskMatch ? riskMatch[1].trim().toUpperCase() : 'UNKNOWN';
+            currentResultData.risk = riskText;
+            
+            riskBadge.className = 'tag';
+            if(riskText.includes('LOW')) riskBadge.classList.add('tag-low');
+            else if(riskText.includes('MEDIUM')) riskBadge.classList.add('tag-medium');
+            else riskBadge.classList.add('tag-high'); // high or critical
+            riskBadge.innerText = riskText.replace(/[^A-Z]/g, '') || 'ASSESSED';
+
+            // Extract Threat Type
+            const typeMatch = markdown.match(/## THREAT TYPE[^\n]*\n(.*)/i);
+            currentResultData.type = typeMatch ? typeMatch[1].trim() : 'Cyber Threat';
+            threatTag.innerText = currentResultData.type;
+
+            // Extract First Action for Whatsapp
+            const actionMatch = markdown.match(/## IMMEDIATE ACTION STEPS[\s\S]*?(✅[^#\n]*)/i);
+            currentResultData.action = actionMatch ? actionMatch[1].trim() : 'Proceed with caution.';
+
+            // Show conditions
+            if(riskText.includes('CRITICAL') || riskText.includes('HIGH')) alertBanner.classList.add('visible');
+            else alertBanner.classList.remove('visible');
+
+            if(markdown.toLowerCase().includes('financial') || markdown.toLowerCase().includes('bank') || markdown.toLowerCase().includes('UPI')) {
+                helplineBanner.classList.add('visible');
+            } else {
+                helplineBanner.classList.remove('visible');
+            }
+
+            // Simple MD to HTML
+            let html = markdown
+                .replace(/## (.*?)\n/g, '<h2>$1</h2>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>')
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/^(\d+\.|-|\*|\u2022)\s(.*)/gm, '<li>$2</li>');
+                
+            // Group lists hack
+            html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+            
+            mdContent.innerHTML = '<p>' + html + '</p>';
+        }
+
+        // WhatsApp Share
+        function shareWhatsApp() {
+            if(!currentResultData.risk) return;
+            const text = `🚨 *CYBER SECURITY ALERT*\n*Type:* ${currentResultData.type}\n*Risk:* ${currentResultData.risk}\n\n*Immediate Action:*\n${currentResultData.action}\n\n📞 For financial fraud in India, dial 1930 immediately.`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
+        }
+
+        // Quick Actions
+        async function analyzeSpecific(type) {
+            const resNode = document.getElementById(type + 'Res');
+            resNode.innerHTML = 'Analyzing...';
+            
+            let prompt = "";
+            if(type === 'link') {
+                const url = document.getElementById('suspiciousUrl').value;
+                if(!url) return resNode.innerHTML = 'Please enter a URL';
+                prompt = `Analyze this URL for phishing or malicious indicators: ${url}. Provide a short risk verdict, list 3 reasons, and classify as SAFE / SUSPICIOUS / MALICIOUS. Format clean text without markdown ##. Keep it very brief.`;
+            } else if(type === 'perms') {
+                const perms = document.getElementById('appPerms').value;
+                if(!perms) return resNode.innerHTML = 'Please enter permissions';
+                prompt = `Classify these app permissions for a generic app. List each one and mark it exactly as ✅ SAFE, ⚠️ SUSPICIOUS, or 🚨 DANGEROUS with a one-line reason: ${perms}. Keep it brief.`;
+            }
+
+            try {
+                const result = await callGemini(prompt, resNode);
+                resNode.innerHTML = result.replace(/\n/g, '<br>');
+            } catch (e) {
+                // handled in call
+            }
+        }
+
+        async function checkBreach() {
+            const email = document.getElementById('breachEmail').value;
+            const key = document.getElementById('hibpApiKey').value;
+            const resNode = document.getElementById('breachRes');
+            
+            if(!email || !key) {
+                resNode.innerHTML = '<span style="color:var(--danger)">Email and HIBP key required.</span>';
+                return;
+            }
+            
+            resNode.innerHTML = 'Checking haveibeenpwned.com...';
+            try {
+                const res = await fetch(`https://haveibeenpwned.com/api/v3/breachedaccount/${encodeURIComponent(email)}`, {
+                    headers: { 'hibp-api-key': key, 'user-agent': 'cybersolver-tool' }
+                });
+                if(res.status === 404) {
+                    resNode.innerHTML = '<span style="color:var(--success)">✅ Good news! No breaches found for this account.</span>';
+                } else if(res.status === 401) {
+                    resNode.innerHTML = '<span style="color:var(--danger)">⚠️ Invalid HIBP API Key.</span>';
+                } else if(res.ok) {
+                    const data = await res.json();
+                    let html = `<span style="color:var(--danger)">🚨 Found in ${data.length} breaches:</span><ul style="margin-left: 1rem; margin-top: 0.5rem; line-height:1.5;">`;
+                    data.forEach(b => {
+                        html += `<li><strong>${b.Name}</strong> <span style="opacity:0.7">(${b.BreachDate})</span></li>`;
+                    });
+                    html += `</ul>`;
+                    resNode.innerHTML = html;
+                } else {
+                    resNode.innerHTML = '<span style="color:var(--danger)">Error checking breaches. Rate limited or API issue.</span>';
+                }
+            } catch(e) {
+                resNode.innerHTML = `<span style="color:var(--danger)">Request failed: ${e.message}</span>`;
+            }
+        }
+    </script>
+</body>
+</html>

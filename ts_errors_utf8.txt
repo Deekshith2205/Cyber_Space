@@ -1,0 +1,15 @@
+Cyber_Space/src/app/ai-assistant/page.tsx(11,26): error TS2305: Module '"@/lib/hooks/use-ai-assistant"' has no exported member 'AIAnalysisResult'.
+Cyber_Space/src/app/ai-assistant/page.tsx(421,45): error TS2339: Property 'analysis' does not exist on type 'AIMessage'.
+Cyber_Space/src/app/ai-assistant/page.tsx(423,71): error TS2339: Property 'analysis' does not exist on type 'AIMessage'.
+Cyber_Space/src/components/ai-assistant-panel.tsx(146,49): error TS2339: Property 'analysis' does not exist on type 'AIMessage'.
+Cyber_Space/src/components/ai-assistant-panel.tsx(151,91): error TS2339: Property 'analysis' does not exist on type 'AIMessage'.
+Cyber_Space/src/components/ai-assistant-panel.tsx(154,132): error TS2339: Property 'analysis' does not exist on type 'AIMessage'.
+Cyber_Space/src/components/ai-assistant-panel.tsx(156,81): error TS2339: Property 'analysis' does not exist on type 'AIMessage'.
+Cyber_Space/src/components/ai-assistant-panel.tsx(158,66): error TS2339: Property 'analysis' does not exist on type 'AIMessage'.
+Cyber_Space/src/components/ai-assistant-panel.tsx(162,125): error TS2339: Property 'analysis' does not exist on type 'AIMessage'.
+Cyber_Space/src/components/ai-assistant-panel.tsx(165,133): error TS2339: Property 'analysis' does not exist on type 'AIMessage'.
+Cyber_Space/src/components/ai-assistant-panel.tsx(169,133): error TS2339: Property 'analysis' does not exist on type 'AIMessage'.
+src/app/ai-assistant/page.tsx(11,26): error TS2305: Module '"@/lib/hooks/use-ai-assistant"' has no exported member 'AIAnalysisResult'.
+src/app/ai-assistant/page.tsx(96,59): error TS2339: Property 'analysis' does not exist on type 'AIMessage'.
+src/app/ai-assistant/page.tsx(96,114): error TS2339: Property 'analysis' does not exist on type 'AIMessage'.
+src/app/ai-assistant/page.tsx(97,33): error TS2339: Property 'analysis' does not exist on type 'AIMessage'.

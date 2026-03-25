@@ -3,309 +3,137 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-    Bot, Send, Sparkles, ShieldCheck, MessageSquare, Info,
-    AlertTriangle, Shield, Wifi, Trash2, ChevronRight, Zap,
-    Mic, MicOff, Clock, RefreshCw
+    Bot, Send, ShieldCheck, AlertTriangle, Shield, Mic, MicOff, 
+    Lock, EyeOff, Globe, CreditCard, CheckCircle2, XCircle, Home,
+    Briefcase, Smartphone, Database, Search, ArrowRight, Activity
 } from "lucide-react";
-import { useUser } from "@/lib/hooks/use-user";
-import { useAIAssistant, AIAnalysisResult, AIHistoryRecord } from "@/lib/hooks/use-ai-assistant";
 import { cn } from "@/lib/utils";
-
-/* ─── Constants ──────────────────────────────────────────────────── */
+import axios from "axios";
 
 const SUGGESTIONS = [
-    { text: "I received a suspicious email asking for my OTP", icon: MessageSquare, tag: "Phishing" },
-    { text: "My computer is running slow and showing ads", icon: AlertTriangle, tag: "Malware" },
-    { text: "Someone is threatening to leak my private files", icon: Shield, tag: "Ransomware" },
-    { text: "How to secure my public Wi-Fi connection?", icon: Wifi, tag: "Network" },
-    { text: "Detect if my account was hacked", icon: Zap, tag: "Breach" },
-    { text: "Guide to report cybercrime in India", icon: Info, tag: "Guide" },
+    "My Instagram got hacked and email changed",
+    "I received a job offer asking for ₹500 processing fee",
+    "Is this QR code safe to scan for receiving money?",
+    "Why is my calculator app asking for SMS permission?",
+    "Was my email leaked in a data breach?"
 ];
 
-const THREAT_ICONS: Record<string, React.ElementType> = {
-    Phishing: MessageSquare,
-    Malware: AlertTriangle,
-    Ransomware: AlertTriangle,
-    "Social Engineering": Bot,
-    "Data Breach": Shield,
-    "Network Attack": Wifi,
-    Other: ShieldCheck,
-};
+// Module registry
+const MODULE_CARDS = [
+    { id: 'account_recovery', title: "Account Recovery", desc: "Recover hacked Instagram, Gmail, WhatsApp", icon: Lock, color: "text-blue-400", bg: "bg-blue-400/10", link: "/account-recovery" },
+    { id: 'job_scam', title: "Job Scam Detector", desc: "Paste job message → get scam score", icon: Briefcase, color: "text-purple-400", bg: "bg-purple-400/10", link: "/job-scam" },
+    { id: 'breach_check', title: "Data Breach Checker", desc: "Check if your email was exposed", icon: Database, color: "text-red-400", bg: "bg-red-400/10", link: "/breach-check" },
+    { id: 'permission_analysis', title: "App Permission Analyzer", desc: "Find out which apps are spying", icon: Smartphone, color: "text-emerald-400", bg: "bg-emerald-400/10", link: "/permission-analysis" },
+    { id: 'payment_fraud', title: "UPI Fraud Analyzer", desc: "Detect QR scams and UPI tricks", icon: CreditCard, color: "text-orange-400", bg: "bg-orange-400/10", link: "/payment-fraud" }
+];
 
-const SEVERITY_CONFIG: Record<string, { badge: string; bar: string; glow: string }> = {
-    Low: {
-        badge: "bg-green-500/20 text-green-400 border-green-500/40",
-        bar: "bg-green-400",
-        glow: "shadow-[0_0_20px_rgba(74,222,128,0.15)]",
-    },
-    Medium: {
-        badge: "bg-yellow-500/20 text-yellow-400 border-yellow-500/40",
-        bar: "bg-yellow-400",
-        glow: "shadow-[0_0_20px_rgba(250,204,21,0.15)]",
-    },
-    High: {
-        badge: "bg-orange-500/20 text-orange-400 border-orange-500/40",
-        bar: "bg-orange-400",
-        glow: "shadow-[0_0_20px_rgba(251,146,60,0.15)]",
-    },
-    Critical: {
-        badge: "bg-red-500/20 text-red-400 border-red-500/40",
-        bar: "bg-red-500",
-        glow: "shadow-[0_0_20px_rgba(239,68,68,0.25)]",
-    },
-};
+// --------------------------------------------------------------------------------
+// UTILITY COMPONENTS
+// --------------------------------------------------------------------------------
 
-const SEVERITY_WIDTH: Record<string, number> = {
-    Low: 25,
-    Medium: 50,
-    High: 75,
-    Critical: 100,
-};
+const RiskRadial = ({ level, score }: { level: string, score?: number }) => {
+    const upper = (level || "MEDIUM").toUpperCase();
+    
+    // Determine color and percentage
+    let strokeColor = "#3BA4FF"; // Default/Low
+    let pct = 25;
+    let label = "LOW";
 
-/* ─── Keyword Highlighter ─────────────────────────────────────────── */
-const KEYWORDS = ["phishing", "malware", "ransomware", "hack", "virus", "scam",
-    "breach", "attack", "vulnerability", "fraud", "spyware", "trojan", "social engineering"];
+    if (upper === "HIGH" || upper === "DANGEROUS" || score && score >= 70) {
+        strokeColor = "#FF4C4C";
+        pct = score || 85;
+        label = "HIGH";
+    } else if (upper === "MEDIUM" || upper === "SUSPICIOUS" || score && score >= 40) {
+        strokeColor = "#F59E0B";
+        pct = score || 50;
+        label = "MEDIUM";
+    } else {
+        strokeColor = "#00FF9C";
+        pct = score || 15;
+    }
 
-function HighlightText({ text }: { text: string }) {
-    const parts = text.split(new RegExp(`(${KEYWORDS.join("|")})`, "gi"));
-    return (
-        <>
-            {parts.map((part, i) =>
-                KEYWORDS.includes(part.toLowerCase())
-                    ? <mark key={i} className="bg-neon-purple/20 text-neon-purple rounded px-0.5 not-italic font-semibold">{part}</mark>
-                    : <span key={i}>{part}</span>
-            )}
-        </>
-    );
-}
-
-/* ─── Typewriter Text ─────────────────────────────────────────────── */
-function TypewriterText({ text, speed = 18 }: { text: string; speed?: number }) {
-    const [displayed, setDisplayed] = useState("");
-    const indexRef = useRef(0);
-
-    useEffect(() => {
-        indexRef.current = 0;
-        Promise.resolve().then(() => setDisplayed(""));
-        const id = setInterval(() => {
-            indexRef.current++;
-            setDisplayed(text.slice(0, indexRef.current));
-            if (indexRef.current >= text.length) clearInterval(id);
-        }, speed);
-        return () => clearInterval(id);
-    }, [text, speed]);
+    const radius = 30;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - (pct / 100) * circumference;
 
     return (
-        <>
-            <HighlightText text={displayed} />
-            {displayed.length < text.length && (
-                <span className="inline-block w-[2px] h-[13px] bg-cyber-blue ml-0.5 animate-pulse align-middle" />
-            )}
-        </>
-    );
-}
-
-/* ─── Analysis Result Card ────────────────────────────────────────── */
-function ThreatCard({ analysis }: { analysis: AIAnalysisResult }) {
-    const Icon = THREAT_ICONS[analysis.threat_type] || ShieldCheck;
-    const sev = SEVERITY_CONFIG[analysis.severity] || SEVERITY_CONFIG.Medium;
-    const barWidth = SEVERITY_WIDTH[analysis.severity] ?? 50;
-    const [tab, setTab] = useState<"solution" | "prevention">("solution");
-
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 12, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.35 }}
-            className={cn(
-                "rounded-2xl border border-border overflow-hidden bg-panel/30 backdrop-blur shadow-premium",
-                sev.glow
-            )}
-        >
-            {/* Top bar */}
-            <div className="flex items-center gap-3 px-5 py-4 border-b border-border/10 ring-1 ring-inset ring-foreground/2">
-                <div className="w-9 h-9 rounded-xl bg-foreground/5 flex items-center justify-center text-cyber-blue shadow-sm">
-                    <Icon size={18} />
-                </div>
-                <div className="flex-1 min-w-0">
-                    <p className="text-[10px] text-text-muted uppercase tracking-widest font-black">Threat Detected</p>
-                    <h3 className="font-bold text-foreground truncate text-glow-primary">{analysis.threat_type}</h3>
-                </div>
-                <span className={cn("px-3 py-1 rounded-full text-[11px] font-black border uppercase tracking-wider shadow-sm", sev.badge)}>
-                    {analysis.severity}
-                </span>
-            </div>
-
-            {/* Severity bar */}
-            <div className="px-5 py-2 bg-foreground/5">
-                <div className="flex items-center gap-3">
-                    <span className="text-[10px] text-text-muted uppercase tracking-widest font-black w-16 shrink-0">Risk Level</span>
-                    <div className="flex-1 h-1.5 bg-foreground/10 rounded-full overflow-hidden shadow-inner">
-                        <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${barWidth}%` }}
-                            transition={{ delay: 0.3, duration: 0.7, ease: "easeOut" }}
-                            className={cn("h-full rounded-full", sev.bar)}
-                        />
-                    </div>
-                    <span className="text-[10px] text-text-secondary font-bold shrink-0 max-w-[140px] truncate">{analysis.risk_level}</span>
+        <div className="flex items-center gap-6 p-4 rounded-2xl bg-black/40 border border-white/5 backdrop-blur-xl">
+            <div className="relative w-20 h-20 flex items-center justify-center">
+                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r="30" stroke="rgba(255,255,255,0.1)" strokeWidth="6" fill="transparent" />
+                    <circle 
+                        cx="40" cy="40" r="30" 
+                        stroke={strokeColor} 
+                        strokeWidth="6" 
+                        fill="transparent" 
+                        strokeDasharray={circumference} 
+                        strokeDashoffset={offset} 
+                        strokeLinecap="round"
+                        style={{ transition: "stroke-dashoffset 1s ease-out" }}
+                    />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-xl font-black text-white">{pct}%</span>
                 </div>
             </div>
-
-            {/* Description with typewriter */}
-            <div className="px-5 py-4 border-b border-white/5">
-                <p className="text-sm text-white leading-relaxed">
-                    <TypewriterText text={analysis.description} />
-                </p>
-            </div>
-
-            {/* Tabs: Solution / Prevention */}
-            <div className="flex border-b border-border/10">
-                {(["solution", "prevention"] as const).map((t) => (
-                    <button
-                        key={t}
-                        onClick={() => setTab(t)}
-                        className={cn(
-                            "flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all",
-                            tab === t
-                                ? "text-cyber-blue border-b-2 border-cyber-blue bg-cyber-blue/5"
-                                : "text-text-muted hover:text-text-secondary"
-                        )}
-                    >
-                        {t === "solution" ? "🛡️ Solution" : "🔒 Prevention"}
-                    </button>
-                ))}
-            </div>
-
-            <div className="px-5 py-4">
-                <AnimatePresence mode="wait">
-                    <motion.div
-                        key={tab}
-                        initial={{ opacity: 0, x: tab === "solution" ? -8 : 8 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: tab === "solution" ? 8 : -8 }}
-                        transition={{ duration: 0.2 }}
-                        className="text-sm text-text-secondary leading-relaxed whitespace-pre-line"
-                    >
-                        {tab === "solution" ? analysis.solution : analysis.prevention}
-                    </motion.div>
-                </AnimatePresence>
-            </div>
-        </motion.div>
-    );
-}
-
-/* ─── History Panel ───────────────────────────────────────────────── */
-function HistoryPanel({
-    history,
-    isLoading,
-    onSelect,
-    onRefresh,
-}: {
-    history: AIHistoryRecord[];
-    isLoading: boolean;
-    onSelect: (q: string) => void;
-    onRefresh: () => void;
-}) {
-    const sev = (s: string) => ({
-        Low: "text-green-400 bg-green-500/10",
-        Medium: "text-yellow-400 bg-yellow-500/10",
-        High: "text-orange-400 bg-orange-500/10",
-        Critical: "text-red-400 bg-red-500/10",
-    }[s] ?? "text-zinc-400 bg-white/5");
-
-    return (
-        <div className="space-y-2">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <Clock size={12} className="text-cyber-blue" />
-                    <p className="text-[10px] font-black text-foreground uppercase tracking-widest">Past Queries</p>
-                </div>
-                <button
-                    onClick={onRefresh}
-                    className="text-text-muted hover:text-foreground transition-colors"
-                    title="Refresh history"
-                >
-                    <RefreshCw size={12} className={isLoading ? "animate-spin" : ""} />
-                </button>
-            </div>
-            {isLoading && (
-                <p className="text-xs text-zinc-600 text-center py-3">Loading...</p>
-            )}
-            {!isLoading && history.length === 0 && (
-                <p className="text-xs text-zinc-600 text-center py-3">No history yet</p>
-            )}
-            <div className="space-y-1.5 max-h-[360px] overflow-y-auto pr-1 scrollbar-thin">
-                {history.map((item) => {
-                    const Icon = THREAT_ICONS[item.threat_type] || ShieldCheck;
-                    return (
-                        <button
-                            key={item._id}
-                            onClick={() => onSelect(item.input)}
-                            className="w-full text-left px-3 py-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/8 hover:border-neon-purple/30 transition-all group"
-                        >
-                            <div className="flex items-center gap-2 mb-1">
-                                <Icon size={10} className="text-zinc-500 group-hover:text-neon-purple transition-colors shrink-0" />
-                                {item.isDomainBlocked ? (
-                                    <span className="text-[9px] font-bold text-yellow-500/80 uppercase tracking-wider">Blocked</span>
-                                ) : (
-                                    <span className={cn("text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full", sev(item.severity))}>
-                                        {item.severity || item.threat_type || "Other"}
-                                    </span>
-                                )}
-                                <span className="text-[9px] text-zinc-700 ml-auto shrink-0">
-                                    {new Date(item.createdAt).toLocaleDateString("en-IN", { month: "short", day: "numeric" })}
-                                </span>
-                            </div>
-                            <p className="text-[11px] text-zinc-400 group-hover:text-zinc-300 transition-colors leading-snug line-clamp-2">
-                                {item.input}
-                            </p>
-                        </button>
-                    );
-                })}
+            <div>
+                <p className="text-xs uppercase tracking-widest text-slate-400 font-bold mb-1">Risk Assesment</p>
+                <h3 className="text-2xl font-black tracking-tight text-white mb-0" style={{ color: strokeColor }}>{label} RISK</h3>
             </div>
         </div>
     );
-}
+};
 
-/* ─── Main Page ───────────────────────────────────────────────────── */
+const SectionData = ({ title, icon: Icon, children }: { title: string, icon: any, children: React.ReactNode }) => {
+    let colorClass = "text-cyan-400";
+    let borderClass = "border-cyan-500/20";
+    
+    if (title.toLowerCase().includes("not")) {
+        colorClass = "text-red-400";
+        borderClass = "border-red-500/20";
+    } else if (title.toLowerCase().includes("action")) {
+        colorClass = "text-emerald-400";
+        borderClass = "border-emerald-500/20";
+    }
+
+    return (
+        <div className="glass-module p-6 rounded-2xl flex flex-col h-full">
+            <h3 className={`flex items-center gap-3 text-sm font-black uppercase tracking-widest mb-4 ${colorClass}`}>
+                <Icon size={18} />
+                {title}
+            </h3>
+            <div className="text-slate-300 font-medium leading-relaxed flex-1 space-y-3 break-words">
+                {children}
+            </div>
+        </div>
+    );
+};
+
+
 export default function AIAssistantPage() {
-    const { user } = useUser();
-    const firstName = user?.name?.split(" ")[0] || "User";
-    const { messages, isLoading, sendMessage, clearMessages, history, isHistoryLoading, fetchHistory } = useAIAssistant();
     const [input, setInput] = useState("");
-    const [sideTab, setSideTab] = useState<"suggestions" | "history">("suggestions");
     const [isListening, setIsListening] = useState(false);
-    const bottomRef = useRef<HTMLDivElement>(null);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [placeholderIndex, setPlaceholderIndex] = useState(0);
+
+    // AI State
+    const [isLoading, setIsLoading] = useState(false);
+    const [activeModule, setActiveModule] = useState<string | null>(null);
+    const [moduleData, setModuleData] = useState<any>(null);
+
+    // Dynamic Placeholders
+    useEffect(() => {
+        const id = setInterval(() => {
+            setPlaceholderIndex((prev) => (prev + 1) % SUGGESTIONS.length);
+        }, 3000);
+        return () => clearInterval(id);
+    }, []);
+
     const recognitionRef = useRef<any>(null);
-
-    useEffect(() => {
-        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [messages, isLoading]);
-
-    // Fetch history on mount
-    useEffect(() => {
-        fetchHistory();
-    }, [fetchHistory]);
-
-    const handleSend = () => {
-        if (!input.trim() || isLoading) return;
-        sendMessage(input);
-        setInput("");
-    };
-
-    /* ── Voice Input ── */
     const toggleVoice = useCallback(() => {
         if (typeof window === "undefined") return;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const w = window as any;
         const SR = w.SpeechRecognition || w.webkitSpeechRecognition;
-
-        if (!SR) {
-            alert("Voice input is not supported in your browser. Try Chrome.");
-            return;
-        }
+        if (!SR) return alert("Voice input not supported.");
 
         if (isListening) {
             recognitionRef.current?.stop();
@@ -316,13 +144,7 @@ export default function AIAssistantPage() {
         const recognition = new SR();
         recognition.lang = "en-IN";
         recognition.interimResults = false;
-        recognition.maxAlternatives = 1;
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        recognition.onresult = (e: any) => {
-            const transcript = e.results[0][0].transcript;
-            setInput((prev: string) => (prev ? prev + " " + transcript : transcript));
-        };
+        recognition.onresult = (e: any) => setInput(prev => prev + " " + e.results[0][0].transcript);
         recognition.onend = () => setIsListening(false);
         recognition.onerror = () => setIsListening(false);
 
@@ -331,253 +153,351 @@ export default function AIAssistantPage() {
         setIsListening(true);
     }, [isListening]);
 
-    const hasMessages = messages.length > 0;
+    const handleSend = async (override?: string) => {
+        const query = (override || input).trim();
+        if (!query || isLoading) return;
+        
+        setIsLoading(true);
+        setActiveModule(null);
+        setModuleData(null);
 
-    return (
-        <div className="space-y-6 pt-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            {/* Page Header */}
-            <div className="flex items-center justify-between">
-                <div className="flex flex-col gap-1">
-                    <h2 className="text-2xl font-black text-foreground tracking-tight flex items-center gap-2">
-                        <Bot className="text-cyber-blue" />
-                        AI Cyber Assistant
-                    </h2>
-                    <p className="text-text-secondary text-sm">Powered by Google Gemini · Cybersecurity domain only</p>
+        try {
+            const token = localStorage.getItem('token');
+            const headers = { Authorization: `Bearer ${token}` };
+
+            // 1. Intent Detection
+            const analyzeRes = await axios.post('http://localhost:5000/api/ai/analyze', { message: query }, { headers });
+            const detectedModule = analyzeRes.data.module; // e.g. 'job_scam'
+
+            // 2. Route to Specific Module
+            const endpointMap: Record<string, string> = {
+                'account_recovery': '/account-recovery',
+                'job_scam': '/job-scam',
+                'breach_check': '/breach-check',
+                'permission_analysis': '/permission-analysis',
+                'payment_fraud': '/payment-fraud'
+            };
+
+            const endpoint = endpointMap[detectedModule] || '/account-recovery';
+            
+            // For breach check, auto-extract email if found
+            let payload: any = { message: query };
+            if (detectedModule === 'breach_check') {
+                const emailMatch = query.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/);
+                if (emailMatch) payload.email = emailMatch[0];
+            }
+
+            const moduleRes = await axios.post(`http://localhost:5000/api/ai${endpoint}`, payload, { headers });
+            
+            setModuleData(moduleRes.data);
+            setActiveModule(detectedModule);
+        } catch (error) {
+            console.error("AI Error:", error);
+            alert("Failed to connect to the AI Engine. Please try again.");
+        } finally {
+            setIsLoading(false);
+            setInput("");
+        }
+    };
+
+    const resetUI = () => {
+        setActiveModule(null);
+        setModuleData(null);
+    };
+
+    // UI RENDERERS
+    const renderHero = () => (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center min-h-[85vh] max-w-5xl mx-auto w-full px-4 relative z-10">
+            {/* Header */}
+            <div className="text-center mb-16 space-y-6">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-blue-500/20 bg-blue-500/10 text-cyan-400 text-xs font-black uppercase tracking-widest mb-2 shadow-sm">
+                    <Shield size={14} className="text-cyan-400" /> Platform Intelligence
                 </div>
-                {hasMessages && (
-                    <button
-                        onClick={() => { clearMessages(); fetchHistory(); }}
-                        className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-border text-text-muted hover:text-foreground hover:bg-foreground/5 text-xs transition-all shadow-sm"
-                    >
-                        <Trash2 size={12} /> Clear Chat
-                    </button>
-                )}
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight mx-auto max-w-5xl">
+                    Describe your cyber problem.<br className="hidden sm:block" />
+                    <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">Get instant help.</span>
+                </h1>
+                <p className="text-lg text-slate-400 font-medium max-w-2xl mx-auto">
+                    AI-powered cybersecurity assistant for India. Fast. Simple. Reliable.
+                </p>
             </div>
 
-            <div className="flex gap-6 h-[calc(100vh-14rem)]">
-
-                {/* ── Left: Chat area ── */}
-                <div className="flex-1 flex flex-col glass rounded-3xl border border-border overflow-hidden min-w-0 shadow-premium">
-                    {/* Chat header */}
-                    <div className="px-6 py-4 border-b border-border/10 flex items-center gap-3 bg-foreground/[0.02]">
-                        <div className="w-9 h-9 rounded-full bg-cyber-blue/10 border border-cyber-blue/20 flex items-center justify-center text-cyber-blue shadow-sm">
-                            <Bot size={18} />
-                        </div>
-                        <div>
-                            <p className="font-bold text-foreground text-sm tracking-tight">CYBERSPACE Intelligence Engine</p>
-                            <p className="text-[10px] text-text-muted uppercase tracking-widest font-black">Gemini · Context-Aware · Neural Security Model</p>
-                        </div>
-                        <div className="ml-auto px-3 py-1 rounded-full bg-success-green/10 border border-success-green/20 text-[10px] text-success-green font-bold uppercase tracking-widest shadow-sm">
-                            Online
-                        </div>
-                    </div>
-
-                    {/* Messages scroll area */}
-                    <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
-                        {/* Empty state */}
-                        {!hasMessages && (
-                            <div className="h-full flex flex-col items-center justify-center text-center space-y-3 py-16">
-                                <div className="w-16 h-16 rounded-2xl bg-neon-purple/10 border border-neon-purple/20 flex items-center justify-center text-neon-purple">
-                                    <Bot size={28} />
-                                </div>
-                                <h4 className="text-lg font-bold text-white">Hello, {firstName}!</h4>
-                                <p className="text-sm text-zinc-500 max-w-sm">
-                                    I classify cyber threats, explain attacks, and give step-by-step solutions.
-                                    Ask a follow-up and I&apos;ll remember our conversation. All responses are limited to cybersecurity.
-                                </p>
-                                <div className="flex items-center gap-4 mt-2">
-                                    <div className="flex items-center gap-1.5 text-xs text-zinc-600">
-                                        <Mic size={12} className="text-neon-purple" />
-                                        <span>Voice input supported</span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5 text-xs text-zinc-600">
-                                        <MessageSquare size={12} className="text-neon-purple" />
-                                        <span>Follow-up questions work</span>
-                                    </div>
-                                </div>
+            {/* Input Bar */}
+            <div className="w-full max-w-3xl relative mb-16">
+                <div className="input-glass p-[6px] pl-4 flex items-center group">
+                    <button 
+                        onClick={toggleVoice}
+                        className={cn("p-3 rounded-full transition-colors shrink-0", isListening ? "text-red-400 bg-red-400/10" : "text-slate-400 hover:text-white")}
+                    >
+                        {isListening ? <MicOff size={22} className="animate-pulse" /> : <Mic size={22} />}
+                    </button>
+                    
+                    <div className="flex-1 px-4 relative flex items-center">
+                        <input 
+                            type="text"
+                            value={input}
+                            onChange={e => setInput(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && handleSend()}
+                            disabled={isLoading}
+                            className="w-full bg-transparent border-none text-white text-lg focus:outline-none focus:ring-0 placeholder:text-transparent relative z-10 font-medium tracking-wide"
+                        />
+                        {!input && (
+                            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                                <span className="text-slate-500 text-lg font-medium">
+                                    {SUGGESTIONS[placeholderIndex]}
+                                </span>
+                                <motion.span 
+                                    animate={{ opacity: [1, 0, 1] }} 
+                                    transition={{ duration: 1, repeat: Infinity }} 
+                                    className="ml-[1px] w-[2px] h-5 bg-cyan-400 inline-block"
+                                />
                             </div>
                         )}
-
-                        <AnimatePresence initial={false}>
-                            {messages.map((msg) => (
-                                <motion.div
-                                    key={msg.id}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.25 }}
-                                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                                >
-                                    {msg.role === "user" ? (
-                                        <div className="max-w-[75%] px-5 py-3 rounded-2xl rounded-br-md bg-cyber-blue/10 border border-cyber-blue/20 text-foreground text-sm leading-relaxed shadow-sm">
-                                            {msg.text}
-                                        </div>
-                                    ) : msg.isDomainBlocked ? (
-                                        <div className="max-w-[75%] px-5 py-3 rounded-2xl rounded-bl-md bg-yellow-500/10 border border-yellow-500/30 text-yellow-600 dark:text-yellow-400 text-sm flex gap-2 items-start shadow-sm">
-                                            <AlertTriangle size={16} className="mt-0.5 shrink-0" />
-                                            <span>{msg.text}</span>
-                                        </div>
-                                    ) : msg.isError ? (
-                                        <div className="max-w-[75%] px-5 py-3 rounded-2xl rounded-bl-md bg-red-500/10 border border-red-500/30 text-alert-red text-sm shadow-sm font-medium">
-                                            {msg.text}
-                                        </div>
-                                    ) : msg.analysis ? (
-                                        <div className="w-full max-w-2xl">
-                                            <ThreatCard analysis={msg.analysis} />
-                                        </div>
-                                    ) : (
-                                        <div className="max-w-[75%] px-5 py-3 rounded-2xl rounded-bl-md bg-foreground/5 border border-border/10 text-foreground text-sm leading-relaxed shadow-sm">
-                                            {msg.text}
-                                        </div>
-                                    )}
-                                </motion.div>
-                            ))}
-                        </AnimatePresence>
-
-                        {/* Typing animation */}
-                        {isLoading && (
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
-                                <div className="px-5 py-3 rounded-2xl rounded-bl-md bg-white/5 border border-white/10 flex gap-1.5 items-center">
-                                    <span className="text-xs text-zinc-500 mr-2">Analyzing threat…</span>
-                                    <span className="w-1.5 h-1.5 bg-neon-purple rounded-full animate-bounce" />
-                                    <span className="w-1.5 h-1.5 bg-neon-purple rounded-full animate-bounce [animation-delay:0.2s]" />
-                                    <span className="w-1.5 h-1.5 bg-neon-purple rounded-full animate-bounce [animation-delay:0.4s]" />
-                                </div>
-                            </motion.div>
-                        )}
-                        <div ref={bottomRef} />
                     </div>
 
-                    {/* Input area */}
-                    <div className="px-6 py-4 border-t border-border/10 bg-foreground/[0.02]">
-                        <div className="relative flex items-center gap-2">
-                            <input
-                                type="text"
-                                value={input}
-                                onChange={(e) => setInput(e.target.value)}
-                                onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                                disabled={isLoading}
-                                placeholder={hasMessages ? "Ask a follow-up…" : "Describe your cybersecurity concern…"}
-                                className="flex-1 bg-foreground/5 border border-border rounded-2xl py-4 pl-6 pr-4 focus:outline-none focus:border-cyber-blue/50 focus:ring-2 focus:ring-cyber-blue/20 transition-all text-sm text-foreground placeholder-text-muted/50 disabled:opacity-50 font-medium"
-                            />
-                            {/* Voice button */}
-                            <button
-                                onClick={toggleVoice}
-                                title={isListening ? "Stop listening" : "Voice input"}
-                                className={cn(
-                                    "shrink-0 w-11 h-11 rounded-xl flex items-center justify-center transition-all",
-                                    isListening
-                                        ? "bg-alert-red text-white shadow-lg shadow-alert-red/20 animate-pulse"
-                                        : "bg-foreground/5 border border-border text-text-muted hover:text-foreground hover:bg-foreground/10"
-                                )}
-                            >
-                                {isListening ? <MicOff size={16} /> : <Mic size={16} />}
-                            </button>
-                            {/* Send button */}
-                            <button
-                                onClick={handleSend}
-                                disabled={isLoading || !input.trim()}
-                                className="shrink-0 h-11 px-5 bg-cyber-blue text-white rounded-xl shadow-lg shadow-cyber-blue/20 font-black text-[11px] uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
-                            >
-                                <Send size={14} /> Send
-                            </button>
-                        </div>
-                        {isListening && (
-                            <p className="text-[11px] text-alert-red mt-2 flex items-center gap-1.5 font-bold uppercase tracking-wider">
-                                <span className="w-1.5 h-1.5 bg-alert-red rounded-full animate-ping inline-block" />
-                                Listening… speak your query
-                            </p>
-                        )}
-                    </div>
-                </div>
-
-                {/* ── Right: Sidebar ── */}
-                <div className="hidden xl:flex flex-col gap-4 w-72 shrink-0">
-                    <div className="glass rounded-2xl border border-white/10 p-5 flex flex-col gap-4 flex-1 min-h-0">
-                        {/* Tab toggle */}
-                        <div className="flex rounded-xl overflow-hidden border border-white/10">
-                            <button
-                                onClick={() => setSideTab("suggestions")}
-                                className={cn(
-                                    "flex-1 py-2 text-[11px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-1.5",
-                                    sideTab === "suggestions"
-                                        ? "bg-neon-purple/20 text-neon-purple"
-                                        : "text-zinc-600 hover:text-zinc-400"
-                                )}
-                            >
-                                <Sparkles size={11} /> Quick
-                            </button>
-                            <button
-                                onClick={() => { setSideTab("history"); fetchHistory(); }}
-                                className={cn(
-                                    "flex-1 py-2 text-[11px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-1.5",
-                                    sideTab === "history"
-                                        ? "bg-neon-purple/20 text-neon-purple"
-                                        : "text-zinc-600 hover:text-zinc-400"
-                                )}
-                            >
-                                <Clock size={11} /> History
-                            </button>
-                        </div>
-
-                        {/* Tab content */}
-                        <AnimatePresence mode="wait">
-                            {sideTab === "suggestions" ? (
-                                <motion.div
-                                    key="suggestions"
-                                    initial={{ opacity: 0, x: -6 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: 6 }}
-                                    transition={{ duration: 0.15 }}
-                                    className="space-y-2"
-                                >
-                                    {SUGGESTIONS.map((s) => (
-                                        <button
-                                            key={s.text}
-                                            onClick={() => setInput(s.text)}
-                                            className="w-full text-left px-4 py-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/8 hover:border-neon-purple/30 transition-all group"
-                                        >
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <span className="text-[10px] text-neon-purple font-bold uppercase tracking-widest">{s.tag}</span>
-                                                <ChevronRight size={10} className="text-zinc-600 group-hover:translate-x-1 transition-transform" />
-                                            </div>
-                                            <p className="text-xs text-zinc-400 group-hover:text-white transition-colors leading-snug">{s.text}</p>
-                                        </button>
-                                    ))}
-                                </motion.div>
-                            ) : (
-                                <motion.div
-                                    key="history"
-                                    initial={{ opacity: 0, x: 6 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -6 }}
-                                    transition={{ duration: 0.15 }}
-                                    className="flex-1 min-h-0"
-                                >
-                                    <HistoryPanel
-                                        history={history}
-                                        isLoading={isHistoryLoading}
-                                        onSelect={(q) => setInput(q)}
-                                        onRefresh={fetchHistory}
-                                    />
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-                    </div>
-
-                    {/* Domain filter info */}
-                    <div className="glass rounded-2xl border border-white/10 p-4 space-y-2">
-                        <p className="text-xs font-bold text-white uppercase tracking-widest">Domain Filter</p>
-                        <p className="text-xs text-zinc-500 leading-relaxed">
-                            Restricted to cybersecurity only. Off-topic queries are blocked automatically.
-                        </p>
-                        <div className="flex flex-wrap gap-1.5">
-                            {["Phishing", "Malware", "Ransomware", "Social Eng.", "Data Breach", "Network"].map(tag => (
-                                <span key={tag} className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/5 border border-white/10 text-zinc-500">{tag}</span>
-                            ))}
-                        </div>
-                    </div>
+                    <button 
+                        onClick={() => handleSend()}
+                        disabled={isLoading || !input.trim()}
+                        className="btn-primary px-8 py-3.5 rounded-full flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        Analyze & Solve <ArrowRight size={18} />
+                    </button>
                 </div>
             </div>
+
+            {/* Modules Grid */}
+            <div className="w-full text-left space-y-4 max-w-5xl">
+                <h3 className="text-slate-500 text-xs font-black uppercase tracking-widest pl-2 flex items-center gap-2"><Activity size={12}/> Analysis Modules</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {MODULE_CARDS.map(mod => (
+                        <button 
+                            key={mod.id}
+                            onClick={() => mod.link ? window.location.href = mod.link : handleSend(mod.title)}
+                            className="glass-module p-8 min-h-[160px] rounded-3xl flex flex-col items-start justify-center relative group w-full text-left"
+                        >
+                            <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors z-10 bg-black/50 border border-white/5 shadow-inner", mod.color)}>
+                                <mod.icon size={24} />
+                            </div>
+                            <h4 className="text-white font-bold text-lg mb-2 z-10">{mod.title}</h4>
+                            <p className="text-slate-400 text-sm leading-relaxed z-10">{mod.desc}</p>
+                            
+                            {/* Subtle bottom edge glow on hover */}
+                            <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-0 group-hover:opacity-100 blur-sm transition-opacity duration-300" />
+                        </button>
+                    ))}
+                </div>
+            </div>
+        </motion.div>
+    );
+
+    const renderLoading = () => {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8">
+                <div className="relative w-24 h-24 flex items-center justify-center">
+                    <svg className="absolute inset-0 w-full h-full animate-[spin_3s_linear_infinite]" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="48" stroke="rgba(0,229,255,0.1)" strokeWidth="1" fill="none" strokeDasharray="4 4" />
+                        <circle cx="50" cy="50" r="40" stroke="rgba(0,102,255,0.2)" strokeWidth="2" fill="none" strokeDasharray="60 30" />
+                        <circle cx="50" cy="50" r="32" stroke="rgba(0,229,255,0.5)" strokeWidth="2" fill="none" strokeDasharray="30 40" className="animate-[spin_2s_linear_infinite_reverse]" style={{ transformOrigin: '50% 50%' }} />
+                    </svg>
+                    <Shield className="w-8 h-8 text-cyan-400 animate-pulse glow-blue" />
+                </div>
+                <div className="text-center">
+                    <h3 className="text-sm font-black text-cyan-400 uppercase tracking-widest animate-pulse">
+                        Analyzing Intelligence Stream...
+                    </h3>
+                    <p className="text-slate-500 text-xs mt-2 font-medium">Please wait while the engine processes data</p>
+                </div>
+            </div>
+        );
+    };
+
+    // --------------------------------------------------------------------------------
+    // MODULE SPECIFIC RENDERERS & STANDARDIZED UI
+    // --------------------------------------------------------------------------------
+    const renderModuleResult = () => {
+        if (!moduleData) return null;
+        
+        const rd = moduleData; // Result Data
+        const titleMap: Record<string, string> = {
+            'account_recovery': 'Account Recovery Analysis',
+            'job_scam': 'Job Scam Analysis',
+            'breach_check': 'Data Breach Report',
+            'permission_analysis': 'Permission Risk Report',
+            'payment_fraud': 'Payment Fraud Detection'
+        };
+
+        const activeTitle = activeModule ? titleMap[activeModule] : "Analysis Complete";
+        
+        // Extract Standardized Sections based on module response structure
+        // Explanation
+        let explanationText: React.ReactNode = rd.explanation;
+        if (activeModule === 'breach_check') {
+            explanationText = rd.breaches?.length > 0 ? 
+                `Found ${rd.breaches.length} exposed incidents involving your data.` : 
+                "No immediate breaches detected. Stay vigilant!";
+            
+            if (rd.breaches?.length > 0) {
+                explanationText = (
+                    <div className="space-y-3">
+                        <p>Found <b>{rd.breaches.length}</b> exposed incidents involving your data.</p>
+                        {rd.breaches.map((b: any, i: number) => (
+                            <div key={i} className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-sm pt-2">
+                                <span className="font-bold text-red-400 block mb-1">{b.name} ({b.year})</span>
+                                <div className="text-xs text-red-300">Exposed: {(b.data_exposed || []).join(", ")}</div>
+                            </div>
+                        ))}
+                    </div>
+                );
+            }
+        } else if (activeModule === 'permission_analysis') {
+            explanationText = (
+                <div className="space-y-3">
+                    <p>App permission breakdown request processed.</p>
+                    {(rd.permissions || []).map((p: any, i: number) => (
+                        <div key={i} className="p-3 bg-blue-500/5 border border-blue-500/10 rounded-lg text-sm">
+                            <span className="font-bold text-blue-400 block">{p.name || "Unknown"}</span>
+                            <div className="text-xs text-slate-400 mt-1">{p.reason}</div>
+                        </div>
+                    ))}
+                </div>
+            );
+        } else if (rd.flags) {
+            explanationText = (
+                <div className="space-y-3">
+                    <p>{rd.explanation}</p>
+                    {(rd.flags || []).map((f: string, i: number) => (
+                        <div key={i} className="px-3 py-2 bg-red-500/5 border border-red-500/10 rounded text-xs text-red-300">
+                            • {f}
+                        </div>
+                    ))}
+                </div>
+            );
+        }
+
+        // Action Plan
+        const actionItems: string[] = rd.what_to_do || rd.steps || rd.actions || [];
+        const nextActions: string[] = rd.next_actions || [];
+
+        // What NOT to do
+        const notToDoItems: string[] = rd.what_not_to_do || [];
+
+        return (
+            <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="max-w-5xl mx-auto w-full pb-20 relative z-10 pt-8 px-4">
+                <button onClick={resetUI} className="mb-8 flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-xs font-bold uppercase tracking-widest">
+                    <ArrowRight className="rotate-180" size={14} /> New Analysis
+                </button>
+
+                {/* Header Profile */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+                    <div>
+                        <h2 className="text-3xl font-black text-white tracking-tight">{activeTitle}</h2>
+                        <p className="text-slate-400 mt-1 text-sm flex items-center gap-2">
+                            <ShieldCheck size={14} className="text-emerald-400" /> Secure AI Analysis Complete
+                        </p>
+                    </div>
+                    {/* Radial Risk Indicator */}
+                    <RiskRadial level={rd.risk_level || (rd.scam_score > 50 ? "HIGH" : "MEDIUM")} score={rd.scam_score} />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Left Column - Explanation */}
+                    <div className="md:col-span-1 space-y-6 flex flex-col">
+                        <SectionData title="Explanation & Context" icon={Activity}>
+                            {explanationText || "Analysis context is not available for this query."}
+                        </SectionData>
+                    </div>
+
+                    {/* Right column - Actions */}
+                    <div className="md:col-span-2 space-y-6 flex flex-col">
+                        
+                        {(notToDoItems.length > 0 || rd.fraud_detected) && (
+                            <SectionData title="What NOT To Do" icon={XCircle}>
+                                {rd.fraud_detected && (
+                                    <div className="mb-4 inline-flex items-center gap-2 px-3 py-1.5 bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-black uppercase tracking-widest rounded-md">
+                                        <AlertTriangle size={14}/> Fraud strongly suspected
+                                    </div>
+                                )}
+                                <ul className="space-y-3">
+                                    {notToDoItems.map((w: string, i: number) => (
+                                        <li key={i} className="flex gap-3 text-red-200 text-sm">
+                                            <XCircle className="text-red-400 shrink-0 mt-0.5" size={16}/> 
+                                            <span className="leading-relaxed">{w}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </SectionData>
+                        )}
+
+                        {actionItems.length > 0 && (
+                            <SectionData title="Action Plan" icon={ShieldCheck}>
+                                <ul className="space-y-3">
+                                    {actionItems.map((w: string, i: number) => (
+                                        <li key={i} className="flex gap-3 text-slate-200 text-sm">
+                                            <CheckCircle2 className="text-emerald-400 shrink-0 mt-0.5" size={16}/> 
+                                            <span className="leading-relaxed">{w}</span>
+                                        </li>
+                                    ))}
+                                    {nextActions.map((w: string, i: number) => (
+                                        <li key={`next_${i}`} className="flex gap-3 text-slate-300 text-sm">
+                                            <ArrowRight className="text-blue-400 shrink-0 mt-0.5" size={16}/> 
+                                            <span className="leading-relaxed">{w}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                                
+                                {/* Links block */}
+                                {(rd.official_links?.length > 0 || rd.report_links?.length > 0) && (
+                                    <div className="mt-6 pt-4 border-t border-white/5">
+                                        <h4 className="text-xs uppercase font-black text-slate-500 mb-3">Official Resources</h4>
+                                        <div className="flex flex-col gap-2">
+                                            {(rd.official_links || rd.report_links).map((link: string, i: number) => (
+                                                <a key={i} href={link} target="_blank" rel="noreferrer" className="text-blue-400 hover:text-cyan-400 transition-colors text-sm underline md:no-underline hover:underline truncate inline-flex items-center gap-1">
+                                                    <Globe size={12}/> {link}
+                                                </a>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </SectionData>
+                        )}
+
+                    </div>
+                </div>
+            </motion.div>
+        );
+    };
+
+    return (
+        <div className="min-h-screen bg-transparent font-sans relative overflow-x-hidden selection:bg-cyan-500/30">
+            {/* Navigation Overlay */}
+            <nav className="w-full p-6 flex justify-between items-center relative z-20 max-w-7xl mx-auto">
+                <div className="flex items-center">
+                    <img 
+                        src="/cyberspacelogo.jpeg" 
+                        alt="Cyberspace Logo" 
+                        className="h-12 w-auto object-contain" 
+                    />
+                </div>
+                <button onClick={() => window.location.href = '/dashboard'} className="btn-secondary px-5 py-2.5 rounded-full font-bold text-xs tracking-widest uppercase">
+                    Back to Dashboard
+                </button>
+            </nav>
+
+            <AnimatePresence mode="wait">
+                {isLoading ? (
+                    <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative z-10 pt-10">
+                        {renderLoading()}
+                    </motion.div>
+                ) : activeModule ? (
+                    <motion.div key="result" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative z-10 w-full">
+                        {renderModuleResult()}
+                    </motion.div>
+                ) : (
+                    <motion.div key="hero" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative z-10">
+                        {renderHero()}
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

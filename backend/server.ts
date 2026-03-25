@@ -16,12 +16,15 @@ app.use(cors());
 // Connect to MongoDB
 connectDatabase();
 
+import aiRoutes from './routes/aiRoutes';
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/threat', threatRoutes);
 app.use('/api', scanRoutes);
+app.use('/api/ai', aiRoutes);
 
 app.listen(config.port, () => {
     console.log(`CyberSpace backend running on port ${config.port}`);

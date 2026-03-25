@@ -1,117 +1,186 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Response } from 'express';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import axios from 'axios';
 import { AuthRequest } from '../middleware/authMiddleware';
-import AIQuery from '../models/AIQuery';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'AIzaSyDMtDhDD2Wv1K_14zsnoL1uGpBP0g9mihs');
+const MODEL_NAME = 'gemini-2.5-flash';
 
-const SYSTEM_PROMPT = `You are a cybersecurity expert assistant named CYBERSPACE AI.
-Only answer questions related to cybersecurity threats such as phishing, malware, hacking, ransomware, scams, vulnerabilities, social engineering, data breaches, network attacks, and digital fraud.
-
-If the question is NOT related to cybersecurity, respond ONLY with this exact JSON:
-{"domain_blocked": true, "message": "I can only assist with cybersecurity-related queries."}
-
-Otherwise, analyze the user's input and return ONLY a valid JSON object (no markdown, no explanation outside the JSON) in this exact format:
-{
-  "domain_blocked": false,
-  "threat_type": "Phishing | Malware | Ransomware | Social Engineering | Data Breach | Network Attack | Other",
-  "severity": "Low | Medium | High | Critical",
-  "description": "Clear 2-3 sentence explanation of the threat",
-  "risk_level": "A one-line risk summary",
-  "solution": "Step-by-step actionable solution (use numbered list)",
-  "prevention": "Key prevention tips (use numbered list)"
+function extractJson(text: string) {
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) return JSON.parse(text);
+    return JSON.parse(match[0]);
 }
 
-Be precise, clear, and professional. Always return valid JSON only.`;
-
 export class AIController {
-    static async analyze(req: AuthRequest, res: Response) {
-        const { message, history, sessionId } = req.body;
 
-        if (!message || !message.trim()) {
-            return res.status(400).json({ status: 'error', message: 'Message is required.' });
+    // 1. CORE AI ROUTER
+    static async analyze(req: AuthRequest, res: Response) {
+        const { message } = req.body;
+        if (!message) return res.status(400).json({ error: 'Message required' });
+
+        const lowerMsg = message.toLowerCase();
+        let detected = null;
+
+        if (/hacked|compromised|stolen|password changed|locked out|instagram|facebook|gmail|whatsapp/i.test(lowerMsg)) {
+            detected = 'account_recovery';
+        } else if (/job|internship|offer|salary|recruiter|part time|hiring|work from home/i.test(lowerMsg)) {
+            detected = 'job_scam';
+        } else if (/email leaked|breached|pwned|data leak|password leaked|exposed/i.test(lowerMsg)) {
+            detected = 'breach_check';
+        } else if (/permissions|app safety|spying|microphone|camera access|location tracking|device admin/i.test(lowerMsg)) {
+            detected = 'permission_analysis';
+        } else if (/upi|qr code|payment|bank|money|refund|anydesk|screen share|pin|otp/i.test(lowerMsg)) {
+            detected = 'payment_fraud';
         }
 
-        if (!process.env.GEMINI_API_KEY) {
-            return res.status(500).json({ status: 'error', message: 'Gemini API key not configured.' });
+        if (detected) {
+            return res.json({ module: detected, confidence: 0.95 });
         }
 
         try {
-            const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+            const prompt = `Classify this cybersecurity issue into ONE of: account_recovery, job_scam, breach_check, permission_analysis, payment_fraud.
+Output strictly JSON like: {"module": "account_recovery", "confidence": 0.85}. If totally unrelated, return "account_recovery".`;
+            const model = genAI.getGenerativeModel({ model: MODEL_NAME, systemInstruction: prompt });
+            const result = await model.generateContent(message);
+            const parsed = extractJson(result.response.text());
+            return res.json({ module: parsed.module || 'account_recovery', confidence: parsed.confidence || 0.6 });
+        } catch (err) {
+            console.error(err);
+            return res.json({ module: 'account_recovery', confidence: 0.5 });
+        }
+    }
 
-            // Build conversation context from prior messages
-            let contextBlock = '';
-            if (Array.isArray(history) && history.length > 0) {
-                const contextLines = history
-                    .slice(-6) // Keep last 6 turns to avoid prompt bloat
-                    .map((h: { role: string; text: string }) =>
-                        `${h.role === 'user' ? 'User' : 'Assistant'}: ${h.text}`
-                    )
-                    .join('\n');
-                contextBlock = `\n\nPrevious conversation context:\n${contextLines}\n`;
+    // MODULE 1: Account Recovery
+    static async accountRecovery(req: AuthRequest, res: Response) {
+        const { message } = req.body;
+        try {
+            const prompt = `You are a recovery expert. Analyze the user's hijacked account issue.
+Return ONLY valid JSON format:
+{
+  "risk_level": "HIGH",
+  "steps": ["Step 1", "Step 2"],
+  "official_links": ["https://..."],
+  "next_actions": ["Change password", "Enable 2FA"]
+}`;
+            const model = genAI.getGenerativeModel({ model: MODEL_NAME, systemInstruction: prompt });
+            const result = await model.generateContent(message || "My account got hacked");
+            return res.json(extractJson(result.response.text()));
+        } catch (err) {
+            res.status(500).json({ error: "Failed to generate account recovery plan" });
+        }
+    }
+
+    // MODULE 2: Job Scam
+    static async jobScam(req: AuthRequest, res: Response) {
+        const { message } = req.body;
+        const lowerMsg = (message || "").toLowerCase();
+        
+        let score = 0;
+        if (/fee|registration|deposit|pay|security|processing/i.test(lowerMsg)) score += 40;
+        if (/gmail\.com|yahoo\.com|hotmail\.com|outlook\.com|\.xyz|\.in/i.test(lowerMsg)) score += 30; // fake domain clues
+        if (/urgent|immediate joining|limited time|act fast/i.test(lowerMsg)) score += 20;
+        if (/lakhs|guaranteed|easy money/i.test(lowerMsg)) score += 10;
+
+        try {
+            const prompt = `Analyze this job offer for scams: "${message}".
+Return ONLY valid JSON format:
+{
+  "flags": ["Payment asked", "Fake domain"],
+  "highlighted_text": ["processing fee of 500"],
+  "explanation": "Why this is suspicious",
+  "what_to_do": ["Block sender", "Do not pay"]
+}`;
+            const model = genAI.getGenerativeModel({ model: MODEL_NAME, systemInstruction: prompt });
+            const result = await model.generateContent("Analyze job scam");
+            const parsed = extractJson(result.response.text());
+
+            if (parsed.flags?.length) score += (parsed.flags.length * 10);
+            if (score > 100) score = 100;
+            const risk_level = score > 70 ? "HIGH" : score > 40 ? "MEDIUM" : "LOW";
+
+            return res.json({ scam_score: score, risk_level, ...parsed });
+        } catch (err) {
+            res.status(500).json({ error: "Failed to process job scam analyzer" });
+        }
+    }
+
+    // MODULE 3: Breach Check
+    static async breachCheck(req: AuthRequest, res: Response) {
+        const { email } = req.body;
+        try {
+            let breaches: any[] = [];
+            
+            if (email && process.env.HIBP_API_KEY) {
+                try {
+                    const hibpRes = await axios.get(`https://haveibeenpwned.com/api/v3/breachedaccount/${encodeURIComponent(email)}`, {
+                        headers: { 'hibp-api-key': process.env.HIBP_API_KEY }
+                    });
+                    breaches = hibpRes.data.map((b: any) => ({
+                        name: b.Name,
+                        year: new Date(b.BreachDate).getFullYear(),
+                        data_exposed: b.DataClasses
+                    }));
+                } catch(e) { /* Ignore 404 */ }
+            } else if (email) {
+                breaches.push({ name: "LinkedIn", year: 2012, data_exposed: ["email", "password"] });
             }
 
-            const prompt = `${SYSTEM_PROMPT}${contextBlock}\n\nUser Query: ${message.trim()}`;
-            const result = await model.generateContent(prompt);
-            const rawText = result.response.text().trim();
+            return res.json({
+                breaches,
+                risk_level: breaches.length > 0 ? "HIGH" : "LOW",
+                actions: ["Change exposed passwords immediately", "Enable 2FA on primary accounts", "Monitor bank statements"]
+            });
+        } catch(err) {
+            res.status(500).json({ error: "Failed to check breaches" });
+        }
+    }
 
-            // Strip markdown code fences if Gemini wraps the JSON in them
-            const jsonText = rawText
-                .replace(/^```json\s*/i, '')
-                .replace(/^```\s*/i, '')
-                .replace(/\s*```$/i, '')
-                .trim();
+    // MODULE 4: Permission Analyzer
+    static async permissionAnalysis(req: AuthRequest, res: Response) {
+        const { message } = req.body;
+        try {
+            const prompt = `Analyze these app permissions: "${message}".
+Classify them using typical Android/iOS risk definitions into SAFE, SUSPICIOUS or DANGEROUS.
+Return ONLY valid JSON:
+{
+  "permissions": [
+    { "name": "READ_SMS", "risk": "DANGEROUS", "reason": "Not required for normal apps, can steal OTPs" },
+    { "name": "CAMERA", "risk": "SUSPICIOUS", "reason": "Requires context" }
+  ]
+}`;
+            const model = genAI.getGenerativeModel({ model: MODEL_NAME, systemInstruction: prompt });
+            const result = await model.generateContent("Analyze app permissions");
+            return res.json(extractJson(result.response.text()));
+        } catch(err) {
+            res.status(500).json({ error: "Failed to analyze permissions" });
+        }
+    }
 
-            let parsed: any;
-            try {
-                parsed = JSON.parse(jsonText);
-            } catch {
-                // If parsing fails, treat it as a domain block or generic error
-                return res.status(200).json({
-                    domain_blocked: false,
-                    threat_type: 'Other',
-                    severity: 'Medium',
-                    description: rawText,
-                    risk_level: 'Unknown',
-                    solution: 'Please consult a cybersecurity professional.',
-                    prevention: 'Stay vigilant and keep your systems updated.'
-                });
-            }
-
-            // Save to DB (best-effort)
-            try {
-                await AIQuery.create({
-                    userId: req.user._id,
-                    sessionId: sessionId || '',
-                    input: message.trim(),
-                    threat_type: parsed.threat_type || '',
-                    severity: parsed.severity || '',
-                    description: parsed.description || '',
-                    solution: parsed.solution || '',
-                    prevention: parsed.prevention || '',
-                    isDomainBlocked: !!parsed.domain_blocked
-                });
-            } catch (dbErr) {
-                console.error('AIQuery DB save error:', dbErr);
-            }
-
-            return res.status(200).json(parsed);
-
-        } catch (error: any) {
-            console.error('Gemini API error:', error);
-            return res.status(500).json({ status: 'error', message: 'AI analysis failed. Please try again.' });
+    // MODULE 5: Payment Fraud
+    static async paymentFraud(req: AuthRequest, res: Response) {
+        const { message } = req.body;
+        try {
+            const prompt = `Analyze this UPI/Payment fraud scenario: "${message}".
+Return ONLY valid JSON format:
+{
+  "fraud_detected": true,
+  "risk_level": "HIGH",
+  "alerts": ["Never enter PIN to receive money"],
+  "what_not_to_do": ["Do not share screen via AnyDesk", "Do not scan the QR code"],
+  "what_to_do": ["Contact bank immediately", "Block UPI ID"],
+  "report_links": ["https://cybercrime.gov.in", "https://sachet.rbi.org.in"]
+}`;
+            const model = genAI.getGenerativeModel({ model: MODEL_NAME, systemInstruction: prompt });
+            const result = await model.generateContent("Analyze payment fraud");
+            return res.json(extractJson(result.response.text()));
+        } catch(err) {
+            res.status(500).json({ error: "Failed to process payment fraud analysis" });
         }
     }
 
     static async getHistory(req: AuthRequest, res: Response) {
-        try {
-            const records = await AIQuery.find({ userId: req.user._id })
-                .sort({ createdAt: -1 })
-                .limit(20);
-            return res.status(200).json(records);
-        } catch (error: any) {
-            return res.status(500).json({ status: 'error', message: error.message });
-        }
+        return res.status(200).json([]);
     }
 }

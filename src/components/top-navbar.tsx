@@ -9,18 +9,12 @@ export default function Navbar() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-panel/80 backdrop-blur-md h-16 flex items-center justify-between px-6 shadow-premium">
-      <div className="flex items-center gap-2">
-        <div className="w-12 h-12 rounded-xl overflow-hidden shadow-premium border border-border">
-          <img src="/cyberspacelogo.jpeg" alt="Cyberspace Logo" className="w-full h-full object-cover" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-black tracking-tighter bg-gradient-to-r from-blue-600 to-cyber-blue bg-clip-text text-transparent">
-            CYBERSPACE
-          </h1>
-          <p className="text-[9px] text-text-muted uppercase tracking-[0.3em] font-bold leading-none mt-0.5">
-            Next-Gen Security Command Center
-          </p>
-        </div>
+      <div className="flex items-center">
+        <img 
+          src="/cyberspacelogo.jpeg" 
+          alt="Cyberspace Logo" 
+          className="h-10 w-auto object-contain" 
+        />
       </div>
 
       <div className="flex-1 max-w-xl mx-8 relative">

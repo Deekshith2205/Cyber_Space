@@ -15,20 +15,19 @@ const suggestions = [
 ];
 
 const THREAT_ICONS: Record<string, React.ElementType> = {
-    Phishing: MessageSquare,
-    Malware: AlertTriangle,
-    Ransomware: AlertTriangle,
-    "Social Engineering": Bot,
-    "Data Breach": Shield,
-    "Network Attack": Wifi,
-    Other: ShieldCheck,
+    ACCOUNT_HACK: AlertTriangle,
+    JOB_SCAM: MessageSquare,
+    DATA_BREACH: Shield,
+    APP_SAFETY: Bot,
+    UPI_FRAUD: Wifi,
+    GENERAL: ShieldCheck,
 };
 
 const SEVERITY_STYLES: Record<string, string> = {
-    Low: "bg-green-500/20 text-green-400 border-green-500/30",
-    Medium: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-    High: "bg-orange-500/20 text-orange-400 border-orange-500/30",
-    Critical: "bg-red-500/20 text-red-400 border-red-500/30",
+    LOW: "bg-green-500/20 text-green-400 border-green-500/30",
+    MEDIUM: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
+    HIGH: "bg-orange-500/20 text-orange-400 border-orange-500/30",
+    CRITICAL: "bg-red-500/20 text-red-400 border-red-500/30",
 };
 
 export default function AIAssistant() {
@@ -131,7 +130,7 @@ export default function AIAssistant() {
                                         className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                                     >
                                         {msg.role === "user" ? (
-                                            <div className="max-w-[85%] p-4 rounded-2xl rounded-tr-none text-xs leading-relaxed bg-cyber-blue text-white shadow-lg shadow-cyber-blue/10 font-bold">
+                                            <div className="max-w-[85%] p-4 rounded-2xl rounded-tr-none text-xs leading-relaxed bg-cyber-blue text-white shadow-lg shadow-cyber-blue/10 font-bold whitespace-pre-wrap">
                                                 {msg.text}
                                             </div>
                                         ) : msg.isDomainBlocked ? (
@@ -143,36 +142,30 @@ export default function AIAssistant() {
                                             <div className="max-w-[85%] p-4 rounded-2xl rounded-tl-none text-xs leading-relaxed bg-alert-red/5 text-alert-red border border-alert-red/10 shadow-sm font-medium">
                                                 {msg.text}
                                             </div>
-                                        ) : msg.analysis ? (
+                                        ) : msg.classification ? (
                                             <div className="w-full space-y-2">
                                                 <div className="rounded-2xl overflow-hidden text-xs border border-border shadow-premium">
                                                     <div className="bg-panel-secondary px-4 py-3 flex items-center gap-3 border-b border-border">
                                                         {(() => {
-                                                            const Icon = THREAT_ICONS[msg.analysis!.threat_type] || ShieldCheck;
+                                                            const Icon = THREAT_ICONS[msg.classification.type] || ShieldCheck;
                                                             return <Icon size={16} className="text-cyber-blue" />;
                                                         })()}
-                                                        <span className="font-black text-foreground uppercase tracking-tight">{msg.analysis.threat_type}</span>
+                                                        <span className="font-black text-foreground uppercase tracking-tight">{msg.classification.type.replace(/_/g, ' ')}</span>
                                                         <span className={cn("ml-auto px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase",
-                                                            SEVERITY_STYLES[msg.analysis.severity] || SEVERITY_STYLES.Medium
+                                                            SEVERITY_STYLES[msg.classification.risk?.toUpperCase() || 'MEDIUM'] || SEVERITY_STYLES.MEDIUM
                                                         )}>
-                                                            {msg.analysis.severity}
+                                                            {msg.classification.risk || 'UNKNOWN'}
                                                         </span>
                                                     </div>
                                                     <div className="p-4 space-y-3 bg-panel/30">
-                                                        <p className="text-text-secondary leading-relaxed font-medium">{msg.analysis.description}</p>
-                                                        <div className="space-y-1.5 p-3 bg-success-green/5 rounded-xl border border-success-green/10">
-                                                            <p className="font-black text-success-green text-[10px] uppercase tracking-widest">🛡️ Actionable Solution</p>
-                                                            <p className="text-text-secondary whitespace-pre-line font-medium">{msg.analysis.solution}</p>
-                                                        </div>
-                                                        <div className="space-y-1.5 p-3 bg-cyber-blue/5 rounded-xl border border-cyber-blue/10">
-                                                            <p className="font-black text-cyber-blue text-[10px] uppercase tracking-widest">🔒 Prevention Strategy</p>
-                                                            <p className="text-text-secondary whitespace-pre-line font-medium">{msg.analysis.prevention}</p>
+                                                        <div className="text-text-secondary whitespace-pre-wrap leading-relaxed font-medium text-[13px]">
+                                                            {msg.text}
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div className="max-w-[85%] p-4 rounded-2xl rounded-tl-none text-xs leading-relaxed bg-panel-secondary text-foreground border border-border shadow-sm font-medium">
+                                            <div className="max-w-[85%] p-4 rounded-2xl rounded-tl-none text-xs leading-relaxed bg-panel-secondary text-foreground border border-border shadow-sm font-medium whitespace-pre-wrap">
                                                 {msg.text}
                                             </div>
                                         )}

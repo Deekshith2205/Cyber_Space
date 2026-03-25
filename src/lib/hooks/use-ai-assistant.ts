@@ -2,22 +2,22 @@
 
 import { useState, useCallback, useRef } from 'react';
 
+export interface AIClassificationResult {
+    type: string;
+    platform: string;
+    risk: string;
+    confidence: number;
+    symptoms: string[];
+    urgency: string;
+}
+
 export interface AIMessage {
     id: number;
     role: 'user' | 'assistant';
     text?: string;
-    analysis?: AIAnalysisResult;
+    classification?: AIClassificationResult;
     isDomainBlocked?: boolean;
     isError?: boolean;
-}
-
-export interface AIAnalysisResult {
-    threat_type: string;
-    severity: 'Low' | 'Medium' | 'High' | 'Critical';
-    description: string;
-    risk_level: string;
-    solution: string;
-    prevention: string;
 }
 
 export interface AIHistoryRecord {
@@ -47,7 +47,7 @@ export function useAIAssistant() {
     // Stable session id for this conversation; reset on clearMessages
     const sessionIdRef = useRef<string>(generateSessionId());
 
-    // Track plain-text turns for context (exclude ThreatCard objects to keep prompt clean)
+    // Track plain-text turns for context
     const contextHistoryRef = useRef<{ role: string; text: string }[]>([]);
 
     const sendMessage = useCallback(async (input: string) => {
@@ -79,7 +79,6 @@ export function useAIAssistant() {
                 body: JSON.stringify({
                     message: input.trim(),
                     sessionId: sessionIdRef.current,
-                    // Send all previous turns except the one we just added
                     history: contextHistoryRef.current.slice(0, -1)
                 })
             });
@@ -109,22 +108,29 @@ export function useAIAssistant() {
                     text: blockedText
                 }]);
             } else {
-                // Add short assistant context turn for follow-up coherence
                 contextHistoryRef.current = [
                     ...contextHistoryRef.current,
-                    { role: 'assistant', text: `[${data.threat_type} - ${data.severity}] ${data.description}` }
+                    { role: 'assistant', text: data.message }
                 ];
+
+                try {
+                    const localHistory = JSON.parse(localStorage.getItem('cyberAssistantHistory') || '[]');
+                    const newRecord = {
+                        _id: Date.now().toString(),
+                        input: input.trim(),
+                        threat_type: data.classification?.type || 'GENERAL',
+                        severity: data.classification?.risk || 'UNKNOWN',
+                        isDomainBlocked: false,
+                        createdAt: new Date().toISOString()
+                    };
+                    localStorage.setItem('cyberAssistantHistory', JSON.stringify([newRecord, ...localHistory]));
+                } catch(e) { console.error('History save error', e); }
+
                 setMessages(prev => [...prev, {
                     id: Date.now() + 1,
                     role: 'assistant',
-                    analysis: {
-                        threat_type: data.threat_type,
-                        severity: data.severity,
-                        description: data.description,
-                        risk_level: data.risk_level,
-                        solution: data.solution,
-                        prevention: data.prevention
-                    }
+                    classification: data.classification,
+                    text: data.message
                 }]);
             }
         } catch {
@@ -148,16 +154,10 @@ export function useAIAssistant() {
     const fetchHistory = useCallback(async () => {
         setIsHistoryLoading(true);
         try {
-            const token = getToken();
-            const resp = await fetch('http://localhost:5000/api/ai/history', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            if (resp.ok) {
-                const data = await resp.json();
-                setHistory(data);
-            }
+            const localHistory = JSON.parse(localStorage.getItem('cyberAssistantHistory') || '[]');
+            setHistory(localHistory);
         } catch {
-            // Silently fail — history panel is non-critical
+            setHistory([]);
         } finally {
             setIsHistoryLoading(false);
         }

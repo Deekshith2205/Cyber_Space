@@ -269,7 +269,7 @@ export default function IncidentReportAssistant() {
                                                         <motion.div 
                                                             initial={{ width: 0 }}
                                                             animate={{ width: `${aiResult.confidence}%` }}
-                                                            transition={{ duration: 1, ease: "easeOut" }}
+                                                            transition={{ duration: 1 }}
                                                             className="h-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.8)]" 
                                                         />
                                                     </div>
