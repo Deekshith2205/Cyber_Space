@@ -13,6 +13,9 @@ router.post('/phishing/check', authMiddleware, PhishingController.checkPhishing)
 // Vulnerability Scan Endpoint
 router.post('/vulnerability/scan', authMiddleware, VulnerabilityController.scanVulnerability);
 
+// Latest Vulnerabilities Endpoint
+router.get('/latest-vulnerabilities', authMiddleware, VulnerabilityController.getLatestCVEs);
+
 // GET /api/threatintel - Retrieve stored threat intelligence records
 router.get('/threatintel', authMiddleware, async (req, res) => {
     try {

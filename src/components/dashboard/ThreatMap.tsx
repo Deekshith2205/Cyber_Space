@@ -1,122 +1,185 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Globe, MapPin, Activity } from "lucide-react";
+import { Globe, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-import { useEffect, useState } from "react";
 import axios from 'axios';
+import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
+
+const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
 type Attack = {
     id: number;
+    ip?: string;
     country: string;
     type: string;
     severity: string;
-    top: string;
-    left: string;
+    lat: number;
+    lng: number;
+    threatScore?: number;
 };
 
 export default function ThreatMap() {
     const [attacks, setAttacks] = useState<Attack[]>([]);
-    
+    const [hoveredPoint, setHoveredPoint] = useState<Attack | null>(null);
+    const [isError, setIsError] = useState(false);
+
     useEffect(() => {
         const fetchThreats = async () => {
             try {
                 // Fetch from the backend we just built
-                const response = await axios.get('http://localhost:5000/api/threat/map');
-                setAttacks(response.data);
+                // We'll use the environment base URL or a relative path
+                const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+                const token = localStorage.getItem('token');
+                
+                const response = await axios.get(`${baseUrl}/threat/map`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                // Ensure data falls back gracefully if array structure is unexpected
+                if (Array.isArray(response.data)) {
+                    setAttacks(response.data);
+                } else {
+                    setAttacks([]);
+                }
+                setIsError(false);
             } catch (error) {
                 console.error("Error fetching threat map data:", error);
-                setAttacks([]);
+                setIsError(true);
             }
         };
 
         fetchThreats();
-        const interval = setInterval(fetchThreats, 60000); // refresh every minute
+        const interval = setInterval(fetchThreats, 10000); // refresh every 10 seconds as requested
 
         return () => clearInterval(interval);
     }, []);
+
+    const recentIncursions = useMemo(() => attacks.slice(0, 3), [attacks]);
+
     return (
         <div className="glass p-6 rounded-3xl shadow-depth border-none h-[400px] flex flex-col relative overflow-hidden group">
-            <div className="flex items-center justify-between mb-6 relative z-10">
+            <div className="flex items-center justify-between mb-2 relative z-10">
                 <div className="flex items-center gap-3">
                     <div className="p-2 bg-cyber-blue/10 rounded-lg text-cyber-blue">
                         <Globe size={20} />
                     </div>
                     <div>
                         <h3 className="text-sm font-bold text-white">Global Threat Map</h3>
-                        <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Real-time attack vector monitoring</p>
+                        <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Real-time IP threat intelligence</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full shadow-depth">
-                    <span className="w-2 h-2 rounded-full bg-alert-red animate-ping" />
-                    <span className="text-[10px] font-bold text-alert-red uppercase tracking-wider">Live tracking</span>
+                    {isError ? (
+                        <>
+                            <span className="w-2 h-2 rounded-full bg-yellow-500" />
+                            <span className="text-[10px] font-bold text-yellow-500 uppercase tracking-wider">Data Unavailable</span>
+                        </>
+                    ) : (
+                        <>
+                            <span className="w-2 h-2 rounded-full bg-alert-red animate-ping" />
+                            <span className="text-[10px] font-bold text-alert-red uppercase tracking-wider">Live System</span>
+                        </>
+                    )}
                 </div>
             </div>
 
-            <div className="flex-1 w-full relative h-[300px] my-auto">
-                {/* Glowing Cyber Map Mask */}
-                <div 
-                    className="absolute inset-0 bg-cyber-blue/20"
+            <div className="flex-1 w-full relative h-[300px] my-auto overflow-hidden">
+                <ComposableMap 
+                    projectionConfig={{ scale: 140 }}
                     style={{
-                        maskImage: `url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg')`,
-                        WebkitMaskImage: `url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg')`,
-                        maskSize: 'contain',
-                        WebkitMaskSize: 'contain',
-                        maskPosition: 'center',
-                        WebkitMaskPosition: 'center',
-                        maskRepeat: 'no-repeat',
-                        WebkitMaskRepeat: 'no-repeat',
+                        width: "100%",
+                        height: "100%",
+                        maskImage: 'radial-gradient(ellipse 50% 50% at 50% 50%, #000 70%, transparent 100%)',
+                        WebkitMaskImage: 'radial-gradient(ellipse 50% 50% at 50% 50%, #000 70%, transparent 100%)'
                     }}
-                />
-                
-                <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
-            </div>
+                >
+                    <Geographies geography={geoUrl}>
+                        {({ geographies }) =>
+                            geographies.map((geo) => (
+                                <Geography
+                                    key={geo.rsmKey}
+                                    geography={geo}
+                                    fill="rgba(14, 165, 233, 0.1)" // subtle cyber-blue
+                                    stroke="rgba(255, 255, 255, 0.05)"
+                                    strokeWidth={0.5}
+                                    style={{
+                                        default: { outline: "none" },
+                                        hover: { fill: "rgba(14, 165, 233, 0.2)", outline: "none" },
+                                        pressed: { outline: "none" },
+                                    }}
+                                />
+                            ))
+                        }
+                    </Geographies>
 
-            {/* Live Attack Points */}
-            <div className="absolute inset-0 pointer-events-none">
-                <div className="relative w-full h-full max-w-[800px] mx-auto">
                     {attacks.map((attack) => (
-                        <motion.div
-                            key={attack.id}
-                            initial={{ scale: 0, opacity: 0 }}
-                            animate={{ scale: [1, 1.1, 1], opacity: [0.7, 1, 0.7] }}
-                            transition={{ duration: 3, repeat: Infinity, delay: attack.id * 0.5, ease: "easeInOut" }}
-                            className={`absolute w-3 h-3 rounded-full flex items-center justify-center ${attack.severity === 'critical' ? 'bg-alert-red/20 shadow-[0_0_10px_#FF4C4C]' :
-                                attack.severity === 'high' ? 'bg-orange-500/20 shadow-[0_0_10px_#f97316]' : 'bg-yellow-400/20'
-                                }`}
-                            style={{ top: attack.top, left: attack.left, transform: 'translate(-50%, -50%)' }}
+                        <Marker 
+                            key={attack.id} 
+                            coordinates={[attack.lng, attack.lat]}
+                            onMouseEnter={() => setHoveredPoint(attack)}
+                            onMouseLeave={() => setHoveredPoint(null)}
                         >
-                            <div className={`w-1 h-1 rounded-full ${attack.severity === 'critical' ? 'bg-alert-red' : 'bg-orange-500'}`} />
-                            
-                            {/* Ripple Effect */}
-                            <motion.div
-                                animate={{ scale: [1, 2.5], opacity: [0.5, 0] }}
-                                transition={{ duration: 2.5, repeat: Infinity, ease: "easeOut", delay: attack.id * 0.5 }}
-                                className={`absolute inset-0 rounded-full border border-solid ${attack.severity === 'critical' ? 'border-alert-red bg-alert-red/20' : 'border-orange-500 bg-orange-500/20'
-                                    }`}
+                            <motion.circle
+                                initial={{ r: 0, opacity: 0 }}
+                                animate={{ r: 4, opacity: 1 }}
+                                className={cn(
+                                    "cursor-pointer",
+                                    attack.severity === 'critical' ? 'fill-alert-red drop-shadow-[0_0_8px_#FF4C4C]' : 
+                                    attack.severity === 'high' ? 'fill-orange-500 drop-shadow-[0_0_8px_#f97316]' : 'fill-yellow-400 drop-shadow-[0_0_8px_#facc15]'
+                                )}
                             />
-                        </motion.div>
+                            
+                            {/* Pulse underlying circle */}
+                            <motion.circle
+                                animate={{ r: [4, 15], opacity: [0.6, 0] }}
+                                transition={{ duration: 2, repeat: Infinity, ease: "easeOut", delay: attack.id * 0.1 }}
+                                className={cn(
+                                    "pointer-events-none fill-transparent stroke-[1.5px]",
+                                    attack.severity === 'critical' ? 'stroke-alert-red' : 
+                                    attack.severity === 'high' ? 'stroke-orange-500' : 'stroke-yellow-400'
+                                )}
+                            />
+                        </Marker>
                     ))}
-                </div>
+                </ComposableMap>
+
+                {hoveredPoint && (
+                    <div 
+                        className="absolute bottom-4 left-4 p-3 bg-black/80 backdrop-blur-md border border-white/10 rounded-xl text-xs z-20 shadow-xl"
+                        style={{ pointerEvents: 'none' }}
+                    >
+                        <div className="font-bold text-white mb-1">IP: <span className="text-cyber-blue font-mono">{hoveredPoint.ip || 'Unknown'}</span></div>
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[10px] text-zinc-400">
+                            <div>Country: <span className="text-zinc-200">{hoveredPoint.country}</span></div>
+                            <div>Score: <span className="text-alert-red font-bold">{hoveredPoint.threatScore}%</span></div>
+                            <div>Type: <span className="text-zinc-200">{hoveredPoint.type}</span></div>
+                            <div>Severity: <span className="uppercase text-orange-500 font-bold">{hoveredPoint.severity}</span></div>
+                        </div>
+                    </div>
+                )}
             </div>
 
-            <div className="absolute bottom-6 right-6 p-4 glass rounded-2xl shadow-depth border-none space-y-2 w-48 z-10">
+            <div className="absolute bottom-6 right-6 p-4 glass rounded-2xl shadow-depth border-none space-y-2 w-48 z-10 pointer-events-none">
                 <h4 className="text-[10px] font-bold text-zinc-500 uppercase flex items-center gap-2">
                     <Activity size={12} className="text-cyber-blue" />
-                    Recent Incursions
+                    Recent Intel
                 </h4>
                 <div className="space-y-1">
-                    {attacks.slice(0, 3).map((a) => (
+                    {recentIncursions.map((a) => (
                         <div key={a.id} className="flex items-center justify-between text-[10px]">
-                            <span className="text-zinc-300 font-medium">{a.country}</span>
+                            <span className="text-zinc-300 font-medium truncate max-w-[80px]" title={a.ip}>{a.ip || a.country}</span>
                             <span className={cn(
                                 "font-bold",
                                 a.severity === 'critical' ? 'text-alert-red' : 'text-orange-500'
                             )}>{a.type}</span>
                         </div>
                     ))}
+                    {recentIncursions.length === 0 && !isError && (
+                        <div className="text-[10px] text-zinc-500">Scanning for threats...</div>
+                    )}
                 </div>
             </div>
         </div>
