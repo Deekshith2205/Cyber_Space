@@ -34,7 +34,7 @@ export function useLatestVulnerabilities() {
                 setLoading(true);
             }
             try {
-                const response = await axios.get('http://localhost:5000/api/latest-vulnerabilities', {
+                const response = await axios.get('/api/latest-vulnerabilities', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 if (isMounted) {

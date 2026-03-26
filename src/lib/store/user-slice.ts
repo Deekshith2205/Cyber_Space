@@ -21,7 +21,7 @@ export const saveProfileToServer = createAsyncThunk(
   'user/saveProfile',
   async (profile: Partial<UserProfile>) => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    const response = await axios.put('http://localhost:5000/api/user/update', profile, {
+    const response = await axios.put('/api/user/update', profile, {
       headers: { Authorization: `Bearer ${token}` }
     });
     return response.data.user;

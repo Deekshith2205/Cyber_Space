@@ -15,7 +15,7 @@ export default function ThreatIntelligencePage() {
     useEffect(() => {
         const fetchCVEs = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/threat/cves');
+                const response = await axios.get('/api/threat/cves');
                 setTopCVEs(response.data);
             } catch (error) {
                 console.error('Error fetching Top CVE Targets:', error);

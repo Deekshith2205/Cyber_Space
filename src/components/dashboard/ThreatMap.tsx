@@ -30,7 +30,7 @@ export default function ThreatMap() {
             try {
                 // Fetch from the backend we just built
                 // We'll use the environment base URL or a relative path
-                const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+                const baseUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
                 const token = localStorage.getItem('token');
                 
                 const response = await axios.get(`${baseUrl}/threat/map`, {

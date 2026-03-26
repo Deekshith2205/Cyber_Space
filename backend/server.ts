@@ -13,9 +13,6 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Connect to MongoDB
-connectDatabase();
-
 import aiRoutes from './routes/aiRoutes';
 
 // API Routes
@@ -26,6 +23,18 @@ app.use('/api/threat', threatRoutes);
 app.use('/api', scanRoutes);
 app.use('/api/ai', aiRoutes);
 
-app.listen(config.port, () => {
-    console.log(`CyberSpace backend running on port ${config.port}`);
-});
+const startServer = async () => {
+    try {
+        // Connect to MongoDB
+        await connectDatabase();
+        
+        app.listen(config.port as number, '0.0.0.0', () => {
+            console.log(`CyberSpace backend running on port ${config.port}`);
+        });
+    } catch (error) {
+        console.error('Failed to start server:', error);
+        process.exit(1);
+    }
+};
+
+startServer();

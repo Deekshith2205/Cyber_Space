@@ -7,11 +7,15 @@ import authMiddleware from '../middleware/authMiddleware';
 
 const router = express.Router();
 
-// Phishing Scan Endpoint
+// Phishing Scan Endpoints
 router.post('/phishing/check', authMiddleware, PhishingController.checkPhishing);
+router.get('/phishing/stats', authMiddleware, PhishingController.getPhishingStats);
+router.get('/phishing/latest', authMiddleware, PhishingController.getLatestScan);
 
-// Vulnerability Scan Endpoint
+// Vulnerability Scan Endpoints
 router.post('/vulnerability/scan', authMiddleware, VulnerabilityController.scanVulnerability);
+router.get('/vulnerabilities/stats', authMiddleware, VulnerabilityController.getVulnerabilityStats);
+router.get('/vulnerabilities/latest', authMiddleware, VulnerabilityController.getLatestScan);
 
 // Latest Vulnerabilities Endpoint
 router.get('/latest-vulnerabilities', authMiddleware, VulnerabilityController.getLatestCVEs);

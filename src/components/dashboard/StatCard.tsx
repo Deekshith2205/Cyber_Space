@@ -12,6 +12,7 @@ interface StatCardProps {
     trend: string;
     trendUp?: boolean;
     color: "blue" | "purple" | "red" | "green";
+    children?: React.ReactNode;
 }
 
 const colorMap = {
@@ -28,7 +29,7 @@ const glowMap = {
     green: "group-hover:shadow-[0_0_20px_rgba(0,255,156,0.2)]",
 };
 
-export default function StatCard({ label, value, icon: Icon, trend, trendUp, color }: StatCardProps) {
+export default function StatCard({ label, value, icon: Icon, trend, trendUp, color, children }: StatCardProps) {
     return (
         <motion.div
             whileHover={{ y: -6, scale: 1.02 }}
@@ -64,6 +65,11 @@ export default function StatCard({ label, value, icon: Icon, trend, trendUp, col
             <div className="relative z-10">
                 <h3 className="text-text-secondary text-xs font-bold uppercase tracking-widest mb-1">{label}</h3>
                 <p className="text-4xl font-black text-foreground tracking-tight text-glow-metric">{value}</p>
+                {children && (
+                    <div className="mt-4 pt-4 border-t border-white/5 animate-in fade-in slide-in-from-top-2 duration-500">
+                        {children}
+                    </div>
+                )}
             </div>
 
             {/* Modern cyber line effect */}

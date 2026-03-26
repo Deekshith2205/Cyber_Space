@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "dev:all": "concurrently \"npm run dev\" \"npm run backend\" \"npm run backend:py\"",
-    "backend": "cd backend && npm run dev",
-    "backend:py": "cd backend && python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload",
+    "backend": "npm run --prefix backend dev",
+    "backend:py": "python -m uvicorn --app-dir backend main:app --host 0.0.0.0 --port 8000 --reload",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"

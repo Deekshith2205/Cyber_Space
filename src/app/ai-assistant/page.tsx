@@ -166,7 +166,7 @@ export default function AIAssistantPage() {
             const headers = { Authorization: `Bearer ${token}` };
 
             // 1. Intent Detection
-            const analyzeRes = await axios.post('http://localhost:5000/api/ai/analyze', { message: query }, { headers });
+            const analyzeRes = await axios.post('/api/ai/analyze', { message: query }, { headers });
             const detectedModule = analyzeRes.data.module; // e.g. 'job_scam'
 
             // 2. Route to Specific Module
@@ -187,7 +187,7 @@ export default function AIAssistantPage() {
                 if (emailMatch) payload.email = emailMatch[0];
             }
 
-            const moduleRes = await axios.post(`http://localhost:5000/api/ai${endpoint}`, payload, { headers });
+            const moduleRes = await axios.post(`/api/ai${endpoint}`, payload, { headers });
             
             setModuleData(moduleRes.data);
             setActiveModule(detectedModule);
