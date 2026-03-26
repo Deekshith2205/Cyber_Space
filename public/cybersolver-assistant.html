@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CyberSolver AI Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0f1e;
+      --accent: #3b82f6;
+      --text: #eaf2ff;
+      --muted: #9fb4d9;
+      --card: rgba(255, 255, 255, 0.08);
+      --card-border: rgba(255, 255, 255, 0.18);
+      --ok: #22c55e;
+      --med: #f59e0b;
+      --high: #f97316;
+      --critical: #ef4444;
+      --shadow: 0 18px 42px rgba(0, 0, 0, 0.35);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    #stars {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      padding: 28px 16px 42px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: min(100%, 1000px);
+      margin-top: 24px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 10px;
+    }
+
+    .icon-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+      background: var(--card);
+      backdrop-filter: blur(10px);
+      color: var(--text);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: 0.2s ease;
+    }
+    .icon-btn:hover { border-color: rgba(59, 130, 246, 0.75); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18); }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .hero h1 {
+      margin: 14px 0 16px;
+      font-size: clamp(1.45rem, 3.5vw, 2.35rem);
+      letter-spacing: 0.2px;
+      font-weight: 800;
+    }
+
+    .input-wrap {
+      max-width: 860px;
+      margin: 0 auto;
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+    }
+    .input-wrap input {
+      flex: 1;
+      min-width: 0;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-size: 15px;
+      padding: 11px 10px 11px 12px;
+      outline: none;
+    }
+    .input-wrap input::placeholder { color: #8da4ca; }
+
+    .mic-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      background: rgba(255, 255, 255, 0.06);
+      color: #d7e8ff;
+      cursor: pointer;
+      font-size: 17px;
+      transition: .2s;
+    }
+    .mic-btn.listening {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ffd8d8;
+      border-color: rgba(239, 68, 68, 0.8);
+      animation: pulse 1.2s infinite;
+    }
+
+    .analyze-btn {
+      border: none;
+      border-radius: 12px;
+      background: var(--accent);
+      color: white;
+      font-weight: 700;
+      padding: 11px 16px;
+      cursor: pointer;
+      transition: .2s;
+    }
+    .analyze-btn:hover { filter: brightness(1.08); }
+    .analyze-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    .voice-state {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #ffd3d3;
+      min-height: 16px;
+    }
+
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin: 16px 0 24px;
+    }
+    .badge {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      color: #cfe0ff;
+      backdrop-filter: blur(8px);
+    }
+
+    .quick-grid {
+      margin-top: 8px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .quick-card {
+      text-align: left;
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+      color: var(--text);
+      padding: 15px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: .2s ease;
+    }
+    .quick-card:hover { transform: translateY(-1px); border-color: rgba(59, 130, 246, 0.75); }
+    .quick-card .title { font-weight: 700; margin-bottom: 6px; color: #f1f6ff; }
+    .quick-card .desc { font-size: 12px; color: #a8bfe5; line-height: 1.45; }
+
+    .error-inline {
+      margin-top: 10px;
+      color: #ffd6d6;
+      font-size: 13px;
+      text-align: center;
+      min-height: 18px;
+    }
+
+    .results-shell {
+      margin-top: 18px;
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: max-height .45s ease, opacity .35s ease, transform .35s ease;
+    }
+    .results-shell.show {
+      max-height: 6000px;
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .results {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 18px;
+      padding: 14px;
+      backdrop-filter: blur(10px);
+    }
+
+    .banner {
+      display: none;
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .banner.alert { background: rgba(239, 68, 68, 0.2); color: #ffd7d7; border: 1px solid rgba(239, 68, 68, 0.7); animation: pulse 1.3s infinite; }
+    .banner.call1930 { background: rgba(245, 158, 11, 0.2); color: #ffe7b8; border: 1px solid rgba(245, 158, 11, 0.8); }
+
+    .chips {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .chip {
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-size: 12px;
+      border: 1px solid transparent;
+      font-weight: 700;
+    }
+    .chip.risk-low { background: rgba(34,197,94,.2); border-color: rgba(34,197,94,.6); color: #bbf7d0; }
+    .chip.risk-medium { background: rgba(245,158,11,.2); border-color: rgba(245,158,11,.6); color: #fde68a; }
+    .chip.risk-high { background: rgba(249,115,22,.2); border-color: rgba(249,115,22,.6); color: #fed7aa; }
+    .chip.risk-critical { background: rgba(239,68,68,.2); border-color: rgba(239,68,68,.6); color: #fecaca; }
+    .chip.type { background: rgba(59,130,246,.17); border-color: rgba(59,130,246,.65); color: #dbeafe; }
+
+    .tool-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .tool-btn {
+      border: 1px solid var(--card-border);
+      background: rgba(255,255,255,.06);
+      color: #e5efff;
+      border-radius: 10px;
+      font-size: 12px;
+      padding: 8px 11px;
+      cursor: pointer;
+    }
+    .tool-btn:hover { border-color: rgba(59,130,246,.7); }
+
+    .section-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .section-card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 12px;
+      padding: 11px 12px;
+      min-height: 92px;
+    }
+    .section-card h3 {
+      margin: 0 0 8px;
+      color: #dce9ff;
+      font-size: 12px;
+      letter-spacing: .15px;
+      font-weight: 700;
+    }
+    .section-card .content {
+      font-size: 13px;
+      color: #eaf2ff;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    .loading-steps {
+      display: grid;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .step {
+      padding: 10px 12px;
+      border-radius: 11px;
+      border: 1px solid rgba(255,255,255,.13);
+      background: rgba(255,255,255,.05);
+      color: #b9cae8;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .step.active { border-color: rgba(59,130,246,.7); color: #dce9ff; }
+    .step.done { border-color: rgba(34,197,94,.65); color: #d1fae5; }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 9, 18, 0.72);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      padding: 14px;
+    }
+    .modal.show { display: flex; }
+    .modal-card {
+      width: min(100%, 620px);
+      max-height: 92vh;
+      overflow: auto;
+      border-radius: 16px;
+      background: rgba(18, 28, 50, 0.88);
+      border: 1px solid rgba(255,255,255,0.16);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .modal-title { margin: 0; font-size: 16px; }
+    .close-btn {
+      border: none;
+      background: transparent;
+      color: #d6e6ff;
+      font-size: 20px;
+      cursor: pointer;
+    }
+    .field {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 10px;
+      outline: none;
+      font-size: 14px;
+    }
+    textarea.field { resize: vertical; min-height: 105px; }
+    .action-btn {
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 10px;
+      font-weight: 700;
+      padding: 9px 12px;
+      cursor: pointer;
+    }
+    .action-btn:disabled { opacity: .65; cursor: not-allowed; }
+    .minor-btn {
+      border: 1px solid rgba(255,255,255,0.22);
+      background: rgba(255,255,255,0.07);
+      color: #eaf3ff;
+      border-radius: 10px;
+      font-weight: 600;
+      padding: 9px 12px;
+      cursor: pointer;
+    }
+    .modal-result {
+      margin-top: 10px;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.06);
+      color: #e5f0ff;
+      font-size: 13px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      padding: 10px;
+      min-height: 40px;
+    }
+
+    .helper { color: #aecaee; font-size: 12px; margin-bottom: 8px; }
+    .link { color: #93c5fd; text-decoration: none; }
+    .link:hover { text-decoration: underline; }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
+    @media (max-width: 780px) {
+      .quick-grid, .section-grid { grid-template-columns: 1fr; }
+      .input-wrap { border-radius: 14px; }
+      .container { margin-top: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="stars"></canvas>
+  <div class="page">
+    <div class="container">
+      <div class="topbar">
+        <button class="icon-btn" id="settingsBtn" title="API Settings">⚙️</button>
+      </div>
+
+      <section class="hero">
+        <h1>Describe your cyber problem. Get instant help.</h1>
+        <div class="input-wrap">
+          <input id="problemInput" type="text" placeholder="Type in English / Hindi / Hinglish / Kannada..." />
+          <button id="micBtn" class="mic-btn" title="Voice input">🎤</button>
+          <button id="analyzeBtn" class="analyze-btn">Analyze Now</button>
+        </div>
+        <div class="voice-state" id="voiceState"></div>
+        <div class="error-inline" id="mainError"></div>
+      </section>
+
+      <div class="badges">
+        <span class="badge">Trusted Guidance</span>
+        <span class="badge">India-specific Scam Detection</span>
+        <span class="badge">No Technical Knowledge Required</span>
+        <span class="badge">Your data is not stored</span>
+      </div>
+
+      <section class="quick-grid">
+        <button class="quick-card" id="quickBreach">
+          <div class="title">Check Data Breach</div>
+          <div class="desc">Check whether your email appears in known breach datasets.</div>
+        </button>
+        <button class="quick-card" id="quickReport">
+          <div class="title">Report Cybercrime</div>
+          <div class="desc">Get direct official reporting help and emergency fraud guidance.</div>
+        </button>
+        <button class="quick-card" id="quickLink">
+          <div class="title">Analyze Suspicious Link</div>
+          <div class="desc">Analyze a URL for phishing indicators and risk verdict.</div>
+        </button>
+        <button class="quick-card" id="quickPerms">
+          <div class="title">Check App Permissions</div>
+          <div class="desc">Classify requested app permissions as safe/suspicious/dangerous.</div>
+        </button>
+      </section>
+
+      <section class="results-shell" id="resultsShell">
+        <div class="results" id="resultsBox">
+          <div class="banner alert" id="highRiskBanner">🚨 High-risk incident detected. Take immediate action.</div>
+          <div class="banner call1930" id="call1930Banner">📞 Call 1930 immediately for financial cyber fraud support.</div>
+          <div id="loadingWrap" style="display:none;">
+            <div class="loading-steps" id="loadingSteps"></div>
+          </div>
+          <div id="resultContent"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="modal" id="settingsModal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 class="modal-title">Settings</h2>
+        <button class="close-btn" data-close="settingsModal">&times;</button>
+      </div>
+      <div class="helper">Keys are stored in <code>sessionStorage</code> only (this browser tab session).</div>
+      <input id="claudeKeyInput" class="field" type="password" placeholder="Anthropic API Key (sk-ant-...)" />
+      <input id="hibpKeyInput" class="field" type="password" placeholder="HIBP API Key (for breach check)" />
+      <div style="display:flex; gap:8px;">
+        <button id="saveSettingsBtn" class="action-btn">Save</button>
+        <button id="clearSettingsBtn" class="minor-btn">Clear</button>
+      </div>
+      <div class="modal-result" id="settingsMsg"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="breachModal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 class="modal-title">Check Data Breach</h2>
+        <button class="close-btn" data-close="breachModal">&times;</button>
+      </div>
+      <input id="breachEmailInput" class="field" type="email" placeholder="Enter email address" />
+      <button id="runBreachBtn" class="action-btn">Check Breaches</button>
+      <div class="modal-result" id="breachResult"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="reportModal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 class="modal-title">Report Cybercrime</h2>
+        <button class="close-btn" data-close="reportModal">&times;</button>
+      </div>
+      <div class="modal-result">For official complaint filing, use the Government of India portal.</div>
+      <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
+        <a class="action-btn" style="text-decoration:none; display:inline-block;" target="_blank" rel="noopener noreferrer" href="https://cybercrime.gov.in">Open cybercrime.gov.in</a>
+        <div class="minor-btn" style="cursor:default;">📞 Financial Fraud Helpline: <strong>1930</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="linkModal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 class="modal-title">Analyze Suspicious Link</h2>
+        <button class="close-btn" data-close="linkModal">&times;</button>
+      </div>
+      <input id="linkInput" class="field" type="url" placeholder="Paste URL (https://...)" />
+      <button id="runLinkBtn" class="action-btn">Analyze URL</button>
+      <div class="modal-result" id="linkResult"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="permModal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 class="modal-title">Check App Permissions</h2>
+        <button class="close-btn" data-close="permModal">&times;</button>
+      </div>
+      <textarea id="permInput" class="field" placeholder="Example: READ_SMS, ACCESS_FINE_LOCATION, CAMERA, READ_CONTACTS"></textarea>
+      <button id="runPermBtn" class="action-btn">Classify Permissions</button>
+      <div class="modal-result" id="permResult"></div>
+    </div>
+  </div>
+
+  <script>
+    // -------------------------
+    // Constants and state
+    // -------------------------
+    const ANTHROPIC_MODEL = "claude-sonnet-4-20250514";
+    const STORAGE_CLAUDE = "cybersolver_claude_api_key";
+    const STORAGE_HIBP = "cybersolver_hibp_api_key";
+    const SYSTEM_PROMPT = "You are CyberSolver AI for Indian users. Always respond in this exact format with these headers: ## PROBLEM SUMMARY / ## THREAT TYPE / ## RISK LEVEL (LOW/MEDIUM/HIGH/CRITICAL) / ## WHY THIS IS DANGEROUS / ## IMMEDIATE ACTION STEPS (numbered, with ✅ DO: and ⛔ DO NOT: prefixes) / ## VERIFIED OFFICIAL LINKS (only cybercrime.gov.in, haveibeenpwned.com, official platform pages) / ## INDIA-SPECIFIC GUIDANCE (always mention 1930 helpline for financial fraud) / ## PREVENTION TIPS (5–7 bullets). Never give hacking instructions. Never fabricate URLs.";
+    const LOADING_STEPS = [
+      "Detecting language & problem type...",
+      "Assessing risk level...",
+      "Building action plan...",
+      "Compiling India-specific guidance..."
+    ];
+
+    let currentParsed = null;
+    let recognition = null;
+    let isListening = false;
+    let stepInterval = null;
+
+    const qs = (id) => document.getElementById(id);
+    const problemInput = qs("problemInput");
+    const analyzeBtn = qs("analyzeBtn");
+    const mainError = qs("mainError");
+    const resultsShell = qs("resultsShell");
+    const resultContent = qs("resultContent");
+    const loadingWrap = qs("loadingWrap");
+    const loadingSteps = qs("loadingSteps");
+    const highRiskBanner = qs("highRiskBanner");
+    const call1930Banner = qs("call1930Banner");
+    const micBtn = qs("micBtn");
+    const voiceState = qs("voiceState");
+
+    // -------------------------
+    // Utility
+    // -------------------------
+    function esc(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function getRiskClass(risk) {
+      const r = (risk || "").toUpperCase();
+      if (r.includes("CRITICAL")) return "risk-critical";
+      if (r.includes("HIGH")) return "risk-high";
+      if (r.includes("MEDIUM")) return "risk-medium";
+      return "risk-low";
+    }
+
+    function showInlineError(message) {
+      mainError.textContent = message || "";
+    }
+
+    function openModal(id) { qs(id).classList.add("show"); }
+    function closeModal(id) { qs(id).classList.remove("show"); }
+
+    function getClaudeKey() { return sessionStorage.getItem(STORAGE_CLAUDE) || ""; }
+    function getHIBPKey() { return sessionStorage.getItem(STORAGE_HIBP) || ""; }
+
+    function parseSections(raw) {
+      const text = String(raw || "").replace(/\r/g, "").trim();
+      const regex = /##\s+([^\n]+)\n([\s\S]*?)(?=\n##\s+|$)/g;
+      const sections = {};
+      let m;
+      while ((m = regex.exec(text)) !== null) {
+        const k = m[1].trim().toUpperCase();
+        const v = m[2].trim();
+        sections[k] = v;
+      }
+      return sections;
+    }
+
+    function getRiskFromSections(sections) {
+      const risk = sections["RISK LEVEL (LOW/MEDIUM/HIGH/CRITICAL)"] || sections["RISK LEVEL"] || "";
+      const upper = risk.toUpperCase();
+      if (upper.includes("CRITICAL")) return "CRITICAL";
+      if (upper.includes("HIGH")) return "HIGH";
+      if (upper.includes("MEDIUM")) return "MEDIUM";
+      return "LOW";
+    }
+
+    function containsFinancialFraud(text) {
+      const t = String(text || "").toLowerCase();
+      return t.includes("financial fraud") || t.includes("upi") || t.includes("bank") || t.includes("payment") || t.includes("wallet") || t.includes("1930");
+    }
+
+    function extractFirstActionStep(actionSection) {
+      if (!actionSection) return "Follow official cyber safety guidance immediately.";
+      const lines = actionSection.split("\n").map((l) => l.trim()).filter(Boolean);
+      const first = lines.find((l) => /^\d+[\).\s-]/.test(l)) || lines[0] || "";
+      return first.replace(/^\d+[\).\s-]*/, "").trim();
+    }
+
+    function renderMarkdownLite(text) {
+      const safe = esc(text);
+      return safe
+        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+        .replace(/^- (.*)$/gm, "• $1")
+        .replace(/\n/g, "<br>");
+    }
+
+    function startLoadingUI() {
+      loadingWrap.style.display = "block";
+      resultContent.innerHTML = "";
+      loadingSteps.innerHTML = LOADING_STEPS.map((s) => `<div class="step"><span>⏳</span><span>${esc(s)}</span></div>`).join("");
+      let idx = 0;
+      if (stepInterval) clearInterval(stepInterval);
+      stepInterval = setInterval(() => {
+        const all = loadingSteps.querySelectorAll(".step");
+        all.forEach((n, i) => {
+          n.classList.remove("active", "done");
+          if (i < idx) {
+            n.classList.add("done");
+            n.innerHTML = `<span>✅</span><span>${esc(LOADING_STEPS[i])}</span>`;
+          } else if (i === idx) {
+            n.classList.add("active");
+            n.innerHTML = `<span>⏳</span><span>${esc(LOADING_STEPS[i])}</span>`;
+          } else {
+            n.innerHTML = `<span>⏳</span><span>${esc(LOADING_STEPS[i])}</span>`;
+          }
+        });
+        idx++;
+        if (idx > LOADING_STEPS.length) idx = LOADING_STEPS.length;
+      }, 900);
+    }
+
+    function stopLoadingUI() {
+      if (stepInterval) clearInterval(stepInterval);
+      stepInterval = null;
+      const all = loadingSteps.querySelectorAll(".step");
+      all.forEach((n, i) => {
+        n.classList.remove("active");
+        n.classList.add("done");
+        n.innerHTML = `<span>✅</span><span>${esc(LOADING_STEPS[i] || "")}</span>`;
+      });
+      setTimeout(() => {
+        loadingWrap.style.display = "none";
+      }, 350);
+    }
+
+    async function callClaude(userText, customSystemPrompt) {
+      const key = getClaudeKey();
+      if (!key) throw new Error("Add your Anthropic API key from the settings icon first.");
+      const resp = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": key,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true"
+        },
+        body: JSON.stringify({
+          model: ANTHROPIC_MODEL,
+          max_tokens: 1300,
+          system: customSystemPrompt || SYSTEM_PROMPT,
+          messages: [{ role: "user", content: userText }]
+        })
+      });
+
+      let payload = null;
+      try { payload = await resp.json(); } catch (_) {}
+      if (!resp.ok) {
+        const errMsg = payload && payload.error && payload.error.message ? payload.error.message : "Anthropic API request failed.";
+        throw new Error(errMsg);
+      }
+      const out = payload && payload.content && payload.content[0] && payload.content[0].text ? payload.content[0].text : "";
+      if (!out) throw new Error("No response text from Claude.");
+      return out;
+    }
+
+    function renderMainResult(rawText) {
+      const sections = parseSections(rawText);
+      currentParsed = sections;
+      const risk = getRiskFromSections(sections);
+      const threatType = sections["THREAT TYPE"] || "Unknown";
+      const allText = Object.values(sections).join("\n");
+
+      highRiskBanner.style.display = (risk === "HIGH" || risk === "CRITICAL") ? "block" : "none";
+      call1930Banner.style.display = containsFinancialFraud(allText) ? "block" : "none";
+
+      const order = [
+        "PROBLEM SUMMARY",
+        "THREAT TYPE",
+        "RISK LEVEL (LOW/MEDIUM/HIGH/CRITICAL)",
+        "WHY THIS IS DANGEROUS",
+        "IMMEDIATE ACTION STEPS",
+        "VERIFIED OFFICIAL LINKS",
+        "INDIA-SPECIFIC GUIDANCE",
+        "PREVENTION TIPS"
+      ];
+
+      const cards = order.map((name) => {
+        const val = sections[name] || "";
+        const display = val ? renderMarkdownLite(val) : '<em style="color:#c6d8f7;">Section missing in model output.</em>';
+        return `
+          <article class="section-card">
+            <h3>## ${esc(name)}</h3>
+            <div class="content">${display}</div>
+          </article>
+        `;
+      }).join("");
+
+      resultContent.innerHTML = `
+        <div class="chips">
+          <span class="chip ${getRiskClass(risk)}">Risk: ${esc(risk)}</span>
+          <span class="chip type">Threat: ${esc(threatType)}</span>
+        </div>
+        <div class="tool-row">
+          <button class="tool-btn" id="pdfBtn">📄 PDF Report</button>
+          <button class="tool-btn" id="waBtn">🟢 WhatsApp Share</button>
+        </div>
+        <div class="section-grid">${cards}</div>
+      `;
+
+      qs("pdfBtn").onclick = generatePrintableReport;
+      qs("waBtn").onclick = shareWhatsApp;
+    }
+
+    function generatePrintableReport() {
+      if (!currentParsed) return;
+      const now = new Date().toLocaleString("en-IN");
+      const ordered = [
+        "PROBLEM SUMMARY",
+        "THREAT TYPE",
+        "RISK LEVEL (LOW/MEDIUM/HIGH/CRITICAL)",
+        "WHY THIS IS DANGEROUS",
+        "IMMEDIATE ACTION STEPS",
+        "VERIFIED OFFICIAL LINKS",
+        "INDIA-SPECIFIC GUIDANCE",
+        "PREVENTION TIPS"
+      ];
+      const htmlSections = ordered.map((k) => `
+        <section style="margin-bottom:14px;">
+          <h3 style="font-size:13px; margin:0 0 6px; color:#0f172a;">## ${esc(k)}</h3>
+          <div style="font-size:12px; line-height:1.55; color:#111827; white-space:pre-wrap;">${esc(currentParsed[k] || "N/A")}</div>
+        </section>
+      `).join("");
+
+      const printWin = window.open("", "_blank");
+      if (!printWin) return;
+      printWin.document.write(`
+        <!doctype html>
+        <html>
+          <head><title>CyberSolver Report</title></head>
+          <body style="font-family:Inter,Arial,sans-serif; padding:22px; color:#0f172a;">
+            <h1 style="margin:0 0 6px; font-size:20px;">CyberSolver Incident Report</h1>
+            <p style="margin:0 0 16px; color:#475569; font-size:12px;">Generated: ${esc(now)}</p>
+            ${htmlSections}
+            <hr style="border:none;border-top:1px solid #cbd5e1;margin:20px 0 10px;" />
+            <p style="font-size:12px; color:#334155;">Report at cybercrime.gov.in | Call 1930</p>
+          </body>
+        </html>
+      `);
+      printWin.document.close();
+      printWin.focus();
+      printWin.print();
+    }
+
+    function shareWhatsApp() {
+      if (!currentParsed) return;
+      const risk = getRiskFromSections(currentParsed);
+      const threat = currentParsed["THREAT TYPE"] || "Unknown";
+      const firstStep = extractFirstActionStep(currentParsed["IMMEDIATE ACTION STEPS"]);
+      const message =
+        "CyberSolver Alert%0A" +
+        "Risk Level: " + encodeURIComponent(risk) + "%0A" +
+        "Threat Type: " + encodeURIComponent(threat) + "%0A" +
+        "First Action: " + encodeURIComponent(firstStep) + "%0A" +
+        "Emergency Helpline (India): 1930";
+      window.open("https://wa.me/?text=" + message, "_blank", "noopener,noreferrer");
+    }
+
+    // -------------------------
+    // Main analyze flow
+    // -------------------------
+    async function analyzeMainProblem() {
+      showInlineError("");
+      const text = problemInput.value.trim();
+      if (!text) {
+        showInlineError("Please describe your cyber problem first.");
+        return;
+      }
+      if (!getClaudeKey()) {
+        showInlineError("Please add your Anthropic API key from settings first.");
+        openModal("settingsModal");
+        return;
+      }
+
+      analyzeBtn.disabled = true;
+      resultsShell.classList.add("show");
+      highRiskBanner.style.display = "none";
+      call1930Banner.style.display = "none";
+      startLoadingUI();
+      try {
+        const responseText = await callClaude(text, SYSTEM_PROMPT);
+        stopLoadingUI();
+        renderMainResult(responseText);
+      } catch (err) {
+        stopLoadingUI();
+        resultContent.innerHTML = `<div class="section-card"><h3>Error</h3><div class="content">${esc(err.message || "Something went wrong. Please try again.")}</div></div>`;
+      } finally {
+        analyzeBtn.disabled = false;
+      }
+    }
+
+    // -------------------------
+    // Voice input
+    // -------------------------
+    function toggleVoice() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        showInlineError("Voice input is not supported in this browser. Try Chrome.");
+        return;
+      }
+      showInlineError("");
+
+      if (isListening && recognition) {
+        recognition.stop();
+        return;
+      }
+
+      recognition = new SpeechRecognition();
+      recognition.lang = "en-IN";
+      recognition.interimResults = true;
+      recognition.continuous = false;
+
+      let finalTranscript = "";
+      recognition.onstart = () => {
+        isListening = true;
+        micBtn.classList.add("listening");
+        voiceState.textContent = "Recording... speak now.";
+      };
+      recognition.onresult = (event) => {
+        let interim = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) finalTranscript += transcript + " ";
+          else interim += transcript;
+        }
+        const merged = (finalTranscript + interim).trim();
+        if (merged) problemInput.value = merged;
+      };
+      recognition.onerror = () => {
+        voiceState.textContent = "Could not capture voice input. Please try again.";
+      };
+      recognition.onend = () => {
+        isListening = false;
+        micBtn.classList.remove("listening");
+        if (!voiceState.textContent.includes("Could not")) {
+          voiceState.textContent = finalTranscript.trim() ? "Voice captured." : "";
+        }
+      };
+      recognition.start();
+    }
+
+    // -------------------------
+    // Quick actions
+    // -------------------------
+    async function runBreachCheck() {
+      const email = qs("breachEmailInput").value.trim();
+      const result = qs("breachResult");
+      result.textContent = "";
+      if (!email) {
+        result.textContent = "Please enter an email address.";
+        return;
+      }
+      const hibpKey = getHIBPKey();
+      if (!hibpKey) {
+        result.textContent = "Please add your HIBP API key in Settings first.";
+        return;
+      }
+      result.textContent = "Checking...";
+      try {
+        const resp = await fetch("https://haveibeenpwned.com/api/v3/breachedaccount/" + encodeURIComponent(email) + "?truncateResponse=false", {
+          headers: {
+            "hibp-api-key": hibpKey,
+            "user-agent": "CyberSolver-WebApp"
+          }
+        });
+        if (resp.status === 404) {
+          result.textContent = "No breaches found for this email.";
+          return;
+        }
+        if (!resp.ok) {
+          const t = await resp.text();
+          throw new Error("HIBP API error: " + t);
+        }
+        const data = await resp.json();
+        if (!Array.isArray(data) || data.length === 0) {
+          result.textContent = "No breaches found for this email.";
+          return;
+        }
+        const lines = data.map((b) => {
+          const date = b.BreachDate || "Unknown date";
+          const classes = Array.isArray(b.DataClasses) ? b.DataClasses.join(", ") : "N/A";
+          return "• " + (b.Name || "Unknown") + " | Date: " + date + " | Exposed: " + classes;
+        });
+        result.textContent = lines.join("\n");
+      } catch (err) {
+        result.textContent = err.message || "Failed to check breaches.";
+      }
+    }
+
+    async function runLinkCheck() {
+      const url = qs("linkInput").value.trim();
+      const result = qs("linkResult");
+      result.textContent = "";
+      if (!url) {
+        result.textContent = "Please enter a URL.";
+        return;
+      }
+      try {
+        new URL(url);
+      } catch (_) {
+        result.textContent = "Please enter a valid URL.";
+        return;
+      }
+      if (!getClaudeKey()) {
+        result.textContent = "Please add your Anthropic API key in Settings first.";
+        return;
+      }
+      result.textContent = "Analyzing URL...";
+      const prompt =
+        "Analyze this URL for phishing indicators and return concise plain text with sections: Verdict, Risk Level, Red Flags, Safe Next Steps. URL: " + url +
+        ". Never provide hacking instructions. If unsure, say unknown.";
+      try {
+        const out = await callClaude(prompt, "You are a cybersecurity assistant focused on safe, defensive guidance for Indian users.");
+        result.textContent = out;
+      } catch (err) {
+        result.textContent = err.message || "Failed to analyze URL.";
+      }
+    }
+
+    async function runPermissionCheck() {
+      const permsRaw = qs("permInput").value.trim();
+      const result = qs("permResult");
+      result.textContent = "";
+      if (!permsRaw) {
+        result.textContent = "Please enter comma-separated permissions.";
+        return;
+      }
+      if (!getClaudeKey()) {
+        result.textContent = "Please add your Anthropic API key in Settings first.";
+        return;
+      }
+      result.textContent = "Classifying permissions...";
+      const prompt =
+        "Given this comma-separated permission list, classify each as ✅ SAFE / ⚠️ SUSPICIOUS / 🚨 DANGEROUS with one-line reason. Keep output concise and defensive only. Permissions: " +
+        permsRaw;
+      try {
+        const out = await callClaude(prompt, "You are a mobile app permission risk analyst. Never provide hacking instructions.");
+        result.textContent = out;
+      } catch (err) {
+        result.textContent = err.message || "Failed to classify permissions.";
+      }
+    }
+
+    // -------------------------
+    // Settings
+    // -------------------------
+    function loadSettingsUI() {
+      qs("claudeKeyInput").value = getClaudeKey();
+      qs("hibpKeyInput").value = getHIBPKey();
+      qs("settingsMsg").textContent = "";
+    }
+
+    function saveSettings() {
+      const claude = qs("claudeKeyInput").value.trim();
+      const hibp = qs("hibpKeyInput").value.trim();
+      if (claude) sessionStorage.setItem(STORAGE_CLAUDE, claude);
+      else sessionStorage.removeItem(STORAGE_CLAUDE);
+      if (hibp) sessionStorage.setItem(STORAGE_HIBP, hibp);
+      else sessionStorage.removeItem(STORAGE_HIBP);
+      qs("settingsMsg").textContent = "Saved for this session.";
+    }
+
+    function clearSettings() {
+      sessionStorage.removeItem(STORAGE_CLAUDE);
+      sessionStorage.removeItem(STORAGE_HIBP);
+      qs("claudeKeyInput").value = "";
+      qs("hibpKeyInput").value = "";
+      qs("settingsMsg").textContent = "Cleared.";
+    }
+
+    // -------------------------
+    // Star background animation
+    // -------------------------
+    function initStars() {
+      const canvas = qs("stars");
+      const ctx = canvas.getContext("2d");
+      let stars = [];
+      let w = window.innerWidth;
+      let h = window.innerHeight;
+
+      function resize() {
+        w = window.innerWidth;
+        h = window.innerHeight;
+        canvas.width = w;
+        canvas.height = h;
+        const count = Math.min(130, Math.floor((w * h) / 13000));
+        stars = Array.from({ length: count }).map(() => ({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.28,
+          vy: (Math.random() - 0.5) * 0.28,
+          r: 1 + Math.random() * 1.4
+        }));
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = "rgba(170, 208, 255, 0.9)";
+        for (const s of stars) {
+          s.x += s.vx;
+          s.y += s.vy;
+          if (s.x < 0 || s.x > w) s.vx *= -1;
+          if (s.y < 0 || s.y > h) s.vy *= -1;
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        for (let i = 0; i < stars.length; i++) {
+          for (let j = i + 1; j < stars.length; j++) {
+            const dx = stars[i].x - stars[j].x;
+            const dy = stars[i].y - stars[j].y;
+            const d = Math.sqrt(dx * dx + dy * dy);
+            if (d < 110) {
+              const a = (1 - d / 110) * 0.22;
+              ctx.strokeStyle = "rgba(59,130,246," + a + ")";
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(stars[i].x, stars[i].y);
+              ctx.lineTo(stars[j].x, stars[j].y);
+              ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(draw);
+      }
+
+      resize();
+      draw();
+      window.addEventListener("resize", resize);
+    }
+
+    // -------------------------
+    // Event wiring
+    // -------------------------
+    analyzeBtn.addEventListener("click", analyzeMainProblem);
+    problemInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") analyzeMainProblem();
+    });
+    micBtn.addEventListener("click", toggleVoice);
+
+    qs("settingsBtn").addEventListener("click", () => { loadSettingsUI(); openModal("settingsModal"); });
+    qs("saveSettingsBtn").addEventListener("click", saveSettings);
+    qs("clearSettingsBtn").addEventListener("click", clearSettings);
+
+    qs("quickBreach").addEventListener("click", () => openModal("breachModal"));
+    qs("quickReport").addEventListener("click", () => openModal("reportModal"));
+    qs("quickLink").addEventListener("click", () => openModal("linkModal"));
+    qs("quickPerms").addEventListener("click", () => openModal("permModal"));
+
+    qs("runBreachBtn").addEventListener("click", runBreachCheck);
+    qs("runLinkBtn").addEventListener("click", runLinkCheck);
+    qs("runPermBtn").addEventListener("click", runPermissionCheck);
+
+    Array.from(document.querySelectorAll("[data-close]")).forEach((btn) => {
+      btn.addEventListener("click", () => closeModal(btn.getAttribute("data-close")));
+    });
+
+    Array.from(document.querySelectorAll(".modal")).forEach((m) => {
+      m.addEventListener("click", (e) => {
+        if (e.target === m) m.classList.remove("show");
+      });
+    });
+
+    initStars();
+  </script>
+</body>
+</html>
+

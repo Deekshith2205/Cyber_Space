@@ -47,8 +47,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             localStorage.removeItem('token');
             setToken(null);
           }
-        } catch (error) {
-          console.error("Failed to restore session", error);
+        } catch (error: any) {
+          console.warn("Failed to restore session:", error.message);
           localStorage.removeItem('token');
           setToken(null);
         }

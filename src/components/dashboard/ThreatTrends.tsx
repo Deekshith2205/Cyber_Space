@@ -1,9 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
-    LineChart,
-    Line,
     XAxis,
     YAxis,
     CartesianGrid,
@@ -12,9 +10,7 @@ import {
     AreaChart,
     Area
 } from "recharts";
-import { TrendingUp } from "lucide-react";
-
-import { useEffect, useState } from "react";
+import { TrendingUp, Activity } from "lucide-react";
 import axios from 'axios';
 
 export default function ThreatTrends() {
@@ -24,7 +20,11 @@ export default function ThreatTrends() {
     useEffect(() => {
         const fetchTrends = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/threat/trends');
+                const token = localStorage.getItem('token');
+                const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+                const response = await axios.get(`${baseUrl}/threat/trends`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
                 setData(response.data);
             } catch (error) {
                 console.error("Error fetching threat trends:", error);
@@ -32,6 +32,7 @@ export default function ThreatTrends() {
         };
 
         fetchTrends();
+        const interval = setInterval(fetchTrends, 15000); // 15-second polling 
 
         // Check for theme
         const checkTheme = () => {
@@ -41,33 +42,59 @@ export default function ThreatTrends() {
 
         const observer = new MutationObserver(checkTheme);
         observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class'] });
-        return () => observer.disconnect();
+        
+        return () => {
+            clearInterval(interval);
+            observer.disconnect();
+        };
     }, []);
 
+    const CustomTooltip = ({ active, payload, label }: any) => {
+        if (active && payload && payload.length) {
+            return (
+                <div className={`p-3 rounded-xl shadow-xl text-xs border backdrop-blur-md ${isDark ? 'bg-black/90 border-cyan-500/30' : 'bg-white/90 border-zinc-200'}`}>
+                    <p className={`font-bold ${isDark ? 'text-white' : 'text-zinc-800'}`}>
+                        {label}: <span className="text-[#00FFFF]">{payload[0].value} threats</span>
+                    </p>
+                </div>
+            );
+        }
+        return null;
+    };
+
     return (
-        <div className="glass p-6 rounded-3xl shadow-sm border border-border h-[300px] flex flex-col group">
-            <div className="flex items-center justify-between mb-6">
+        <div className="glass p-6 rounded-3xl shadow-sm border border-border h-[300px] flex flex-col group relative overflow-hidden">
+            <div className="flex items-center justify-between mb-6 relative z-10">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-neon-purple/10 rounded-lg text-neon-purple shadow-sm">
+                    <div className="p-2 bg-cyan-500/10 rounded-lg text-[#00FFFF] shadow-[0_0_15px_rgba(0,255,255,0.2)]">
                         <TrendingUp size={20} />
                     </div>
                     <div>
-                        <h3 className="text-sm font-bold text-foreground text-glow-primary">Monthly Threat Trends</h3>
-                        <p className="text-[10px] text-text-secondary uppercase tracking-widest font-bold">Heuristic analysis projection</p>
+                        <h3 className="text-sm font-bold text-white drop-shadow-[0_0_8px_rgba(0,255,255,0.5)]">Monthly Threat Trends</h3>
+                        <p className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#00FFFF] animate-pulse" /> Live Analysis
+                        </p>
                     </div>
                 </div>
             </div>
 
-            <div className="flex-1 w-full translate-y-2">
+            <div className="flex-1 w-full translate-y-2 relative z-10">
                 <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={data}>
+                    <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                         <defs>
                             <linearGradient id="colorThreats" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#7A5CFF" stopOpacity={isDark ? 0.3 : 0.15} />
-                                <stop offset="95%" stopColor="#7A5CFF" stopOpacity={0} />
+                                <stop offset="5%" stopColor="#00FFFF" stopOpacity={isDark ? 0.4 : 0.2} />
+                                <stop offset="95%" stopColor="#00FFFF" stopOpacity={0} />
                             </linearGradient>
+                            <filter id="glow">
+                                <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#ffffff05" : "#00000008"} vertical={false} />
+                        <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#ffffff08" : "#00000008"} vertical={false} />
                         <XAxis
                             dataKey="name"
                             axisLine={false}
@@ -80,24 +107,17 @@ export default function ThreatTrends() {
                             tickLine={false}
                             tick={{ fill: isDark ? '#A8C1D9' : '#5B6B8C', fontSize: 10, fontWeight: 600 }}
                         />
-                        <Tooltip
-                            contentStyle={{
-                                backgroundColor: isDark ? 'rgba(11, 15, 20, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-                                border: isDark ? 'none' : '1px solid rgba(0,0,0,0.05)',
-                                borderRadius: '12px',
-                                fontSize: '10px',
-                                boxShadow: isDark ? '0 10px 30px rgba(0,0,0,0.6)' : '0 10px 30px rgba(0,0,0,0.08)'
-                            }}
-                            itemStyle={{ color: '#7A5CFF' }}
-                        />
+                        <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(0, 255, 255, 0.2)', strokeWidth: 2, strokeDasharray: '4 4' }} />
                         <Area
                             type="monotone"
                             dataKey="threats"
-                            stroke="#7A5CFF"
+                            stroke="#00FFFF"
                             strokeWidth={3}
                             fillOpacity={1}
                             fill="url(#colorThreats)"
-                            animationDuration={2000}
+                            animationDuration={1500}
+                            style={{ filter: 'url(#glow)' }}
+                            activeDot={{ r: 6, fill: "#00FFFF", stroke: "#fff", strokeWidth: 2, className: "drop-shadow-[0_0_8px_rgba(0,255,255,1)]" }}
                         />
                     </AreaChart>
                 </ResponsiveContainer>

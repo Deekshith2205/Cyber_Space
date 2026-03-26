@@ -17,7 +17,7 @@ export class ThreatController {
             }
 
             const data = await ThreatService.getGlobalThreats();
-            cache.set(cacheKey, data);
+            cache.set(cacheKey, data, 60); // Cache for 60 seconds
             
             res.json(data);
         } catch (error) {
@@ -35,7 +35,7 @@ export class ThreatController {
             }
 
             const data = await ThreatService.getThreatTrends();
-            cache.set(cacheKey, data);
+            cache.set(cacheKey, data, 15);
             
             res.json(data);
         } catch (error) {

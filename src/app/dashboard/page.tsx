@@ -11,7 +11,7 @@ import {
 import StatCard from "@/components/dashboard/StatCard";
 import QuickActions from "@/components/dashboard/QuickActions";
 import ThreatMap from "@/components/dashboard/ThreatMap";
-import VulnerabilityTable from "@/components/dashboard/VulnerabilityTable";
+import VulnerabilityPreview from "@/components/dashboard/VulnerabilityPreview";
 import ThreatTrends from "@/components/dashboard/ThreatTrends";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
@@ -91,7 +91,7 @@ export default function DashboardPage() {
 
             {/* Table Section */}
             <div className="pb-8">
-                <VulnerabilityTable />
+                <VulnerabilityPreview />
             </div>
         </div>
     );
