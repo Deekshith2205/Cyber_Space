@@ -25,7 +25,7 @@ export default function VerifyEmailPage() {
 
     const verify = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/auth/verify/${token}`);
+        const response = await axios.get(`/api/auth/verify/${token}`);
         if (response.data.status === "success") {
           setStatus("success");
           setMessage(response.data.message);

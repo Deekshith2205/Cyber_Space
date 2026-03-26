@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (storedToken) {
         try {
           setToken(storedToken);
-          const response = await axios.get('http://localhost:5000/api/auth/me', {
+          const response = await axios.get('/api/auth/me', {
             headers: { Authorization: `Bearer ${storedToken}` }
           });
           if (response.data.status === 'success') {
@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+      const response = await axios.post('/api/auth/login', { email, password });
       if (response.data.status === 'success') {
         const { token, user, isWeakPassword } = response.data;
         setUser(user);
@@ -80,7 +80,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const register = async (name: string, email: string, password: string) => {
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/register', { name, email, password });
+      const response = await axios.post('/api/auth/register', { name, email, password });
       if (response.data.status === 'success') {
         router.push('/login');
       } else {
@@ -93,7 +93,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const updateProfile = async (name: string, email: string, designation: string) => {
     try {
-      const response = await axios.put('http://localhost:5000/api/user/update', 
+      const response = await axios.put('/api/user/update', 
         { name, email, designation },
         { headers: { Authorization: `Bearer ${token}` } }
       );

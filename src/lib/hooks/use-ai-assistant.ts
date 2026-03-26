@@ -70,7 +70,7 @@ export function useAIAssistant() {
 
         try {
             const token = getToken();
-            const resp = await fetch('http://localhost:5000/api/ai/analyze', {
+            const resp = await fetch('/api/ai/analyze', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

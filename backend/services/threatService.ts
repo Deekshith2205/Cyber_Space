@@ -43,15 +43,22 @@ export class ThreatService {
                 const score = ipData.abuseConfidenceScore;
                 const isCritical = score > 95;
                 const types = ["Malware", "DDoS", "Phishing", "Ransomware", "Exploit"];
-                const hash = ip.split('.').reduce((a: number, b: string) => a + parseInt(b), 0);
-                const type = types[hash % types.length];
+                // Robust hashing for IPv4/IPv6 that avoids NaN
+                const hash = String(ip).split(/[:.]/).reduce((a, b) => a + (parseInt(b, 16) || 0), 0);
+                const type = types[Math.abs(hash) % types.length] || types[0];
 
                 let lat = 0;
                 let lng = 0;
                 let country = ipData.countryCode || "XX";
 
+                const landmasses = [
+                    { lat: 37.77, lng: -122.41 }, { lat: 40.71, lng: -74.00 }, { lat: -23.55, lng: -46.63 },
+                    { lat: 51.50, lng: -0.12 }, { lat: 48.85, lng: 2.35 }, { lat: 55.75, lng: 37.61 },
+                    { lat: 39.90, lng: 116.40 }, { lat: 28.61, lng: 77.20 }, { lat: -33.92, lng: 18.42 },
+                    { lat: -33.86, lng: 151.20 }, { lat: 35.67, lng: 139.65 }, { lat: 25.20, lng: 55.27 }
+                ];
+
                 try {
-                    // Only request if we have an IPINFO key, else guess a random lat/lng on land
                     if (ipInfoKey && ipInfoKey !== 'xxxx') {
                         const geoUrl = `https://ipinfo.io/${ip}/json?token=${ipInfoKey}`;
                         const geoResponse = await axios.get(geoUrl);
@@ -61,22 +68,20 @@ export class ThreatService {
                             lat = parseFloat(geoLat);
                             lng = parseFloat(geoLng);
                         }
-                    } else {
-                        // Fallback to pseudo-random coordinates if IPinfo is empty
-                        const landmasses = [
-                            { lat: 37.77, lng: -122.41 }, { lat: 40.71, lng: -74.00 }, { lat: -23.55, lng: -46.63 },
-                            { lat: 51.50, lng: -0.12 }, { lat: 48.85, lng: 2.35 }, { lat: 55.75, lng: 37.61 },
-                            { lat: 39.90, lng: 116.40 }, { lat: 28.61, lng: 77.20 }, { lat: -33.92, lng: 18.42 },
-                            { lat: -33.86, lng: 151.20 }, { lat: 35.67, lng: 139.65 }, { lat: 25.20, lng: 55.27 }
-                        ];
-                        const fallback = landmasses[hash % landmasses.length];
+                    }
+
+                    // If coordinates are still zero (either IPinfo failed or key missing), use fallback
+                    if (lat === 0 && lng === 0) {
+                        const fallback = landmasses[Math.abs(hash) % landmasses.length];
                         lat = fallback.lat;
                         lng = fallback.lng;
                     }
                 } catch (geoErr) {
                     console.error(`Error fetching IPinfo for ${ip}:`, geoErr);
-                     // Set roughly valid lat lng as fallback
-                     lat = 0; lng = 0;
+                    // Final fallback on error
+                    const fallback = landmasses[Math.abs(hash) % landmasses.length];
+                    lat = fallback.lat;
+                    lng = fallback.lng;
                 }
 
                 return {
@@ -125,7 +130,7 @@ export class ThreatService {
                 { $sort: { "_id.year": 1, "_id.month": 1 } }
             ]);
 
-            const dynamicData = [];
+            const dynamicData: { monthNum: number; year: number; name: string; threats: number; }[] = [];
             // Scaffold 6 months timeline
             for (let i = 5; i >= 0; i--) {
                 const dateCursor = new Date();

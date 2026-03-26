@@ -85,4 +85,71 @@ export class PhishingController {
             });
         }
     }
+
+    static async getPhishingStats(req: AuthRequest, res: Response) {
+        try {
+            const stats = await PhishingScan.aggregate([
+                { $match: { userId: req.user._id } },
+                {
+                    $facet: {
+                        counts: [
+                            {
+                                $group: {
+                                    _id: "$threatStatus",
+                                    count: { $sum: 1 }
+                                }
+                            }
+                        ],
+                        latest: [
+                            { $sort: { scanDate: -1 } },
+                            { $limit: 1 }
+                        ]
+                    }
+                }
+            ]);
+
+            const countsMap: any = { malicious: 0, safe: 0, total: 0 };
+            const data = stats[0];
+
+            if (data.counts) {
+                data.counts.forEach((item: any) => {
+                    const status = (item._id || "").toLowerCase();
+                    if (status === "malicious" || status === "phishing") countsMap.malicious += item.count;
+                    else countsMap.safe += item.count;
+                    countsMap.total += item.count;
+                });
+            }
+
+            res.status(200).json({
+                total_links_scanned: countsMap.total,
+                malicious_links_count: countsMap.malicious,
+                safe_links_count: countsMap.safe,
+                last_scanned_at: data.latest[0]?.scanDate || null
+            });
+        } catch (error: any) {
+            console.error('Error fetching phishing stats:', error);
+            res.status(500).json({ status: "error", message: "Failed to fetch stats" });
+        }
+    }
+
+    static async getLatestScan(req: AuthRequest, res: Response) {
+        try {
+            const latest = await PhishingScan.findOne({ userId: req.user._id })
+                .sort({ scanDate: -1 });
+
+            if (!latest) {
+                return res.status(200).json(null);
+            }
+
+            res.status(200).json({
+                latest_url: latest.url,
+                status: latest.threatStatus,
+                result: latest.scanSource,
+                detectedAt: latest.scanDate
+            });
+        } catch (error: any) {
+            console.error('Error fetching latest phishing scan:', error);
+            res.status(500).json({ status: "error", message: "Failed to fetch latest scan" });
+        }
+    }
 }

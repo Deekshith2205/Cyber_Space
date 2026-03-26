@@ -25,7 +25,7 @@ import { logout } from "@/lib/store/auth-slice";
 const menuItems = [
     { icon: LayoutDashboard, label: "Dashboard", id: "dashboard", href: "/dashboard" },
     { icon: ShieldAlert, label: "Vulnerability Scanner", id: "scanner", href: "/vulnerability-scanner" },
-    { icon: Link2, label: "Phishing Link Checker", id: "phishing", href: "/phishing-checker" },
+    { icon: Link2, label: "Phishing Link Checker", id: "phishing", href: "/phishing-link-checker" },
     { icon: Bot, label: "AI Cyber Assistant", id: "ai-assistant", href: "/ai-assistant" },
     { icon: FolderSearch, label: "Resource Directory", id: "resources", href: "/resource-directory" },
     { icon: Activity, label: "Threat Intelligence", id: "intelligence", href: "/threat-intelligence" },
